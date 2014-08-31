@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	client bool
+	daemon bool
 )
 
 func main() {
@@ -19,11 +19,12 @@ func main() {
 		},
 	}
 
-	routerCmd.Flags().BoolVarP(&client, "client", "c", true, "whether to run as client mode")
+	routerCmd.Flags().BoolVarP(&daemon, "daemon", "d", true, "whether to run as daemon mode")
 
 	initCmd := &cobra.Command{
 		Use:   "init",
 		Short: "init the registry",
+		Long:  "init the registry with speciffic ip network information",
 		Run: func(c *cobra.Command, args []string) {
 			fmt.Printf("vrouter init\n")
 		},
