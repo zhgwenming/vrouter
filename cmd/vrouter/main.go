@@ -6,6 +6,10 @@ import (
 	"log"
 )
 
+var (
+	client bool
+)
+
 func main() {
 	routerCmd := &cobra.Command{
 		Use:  "vrouter",
@@ -14,6 +18,8 @@ func main() {
 			c.Help()
 		},
 	}
+
+	routerCmd.Flags().BoolVarP(&client, "client", "c", true, "whether to run as client mode")
 
 	initCmd := &cobra.Command{
 		Use:   "init",
