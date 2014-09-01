@@ -91,6 +91,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 
 	_, ipnet, err := net.ParseCIDR(subnet)
 
+	hostNames = strings.Split(machines, ",")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,7 +106,10 @@ func registryInit(cmd *cobra.Command, args []string) {
 	keyPrefix := REGISTRY_PREFIX + "/" + "route"
 	for i, node := range hostNames {
 		key := keyPrefix + "/" + node + "/" + "ipnet"
+		log.Printf("host %s\n", node)
 		if value, err := json.Marshal(nets[i]); err != nil {
+			log.Fatal(err)
+		} else {
 			if _, err := etcd.Create(key, string(value), 0); err != nil {
 				log.Printf("Error to create node: %s", err)
 			}
