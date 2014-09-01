@@ -6,16 +6,19 @@ import (
 )
 
 var (
-	machines  string
-	hostNames []string
-	subnet    string
+	machines   string
+	hostNames  []string
+	subnet     string
+	etcdServer *string
 )
 
 const (
 	DEFAULT_SUBNET = "10.0.0.0/16"
 )
 
-func Init(parent *cobra.Command) {
+func Init(parent *cobra.Command, etcd *string) {
+
+	etcdServer = etcd
 
 	initCmd := &cobra.Command{
 		Use:   "init [subnet]",
@@ -37,5 +40,5 @@ func registryInit(cmd *cobra.Command, args []string) {
 		subnet = DEFAULT_SUBNET
 	}
 
-	fmt.Printf("vrouter init %s\n", subnet)
+	fmt.Printf("vrouter init %s, etcd: %s\n", subnet, *etcdServer)
 }
