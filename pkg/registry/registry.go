@@ -54,7 +54,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 	client = etcdRegistry{etcdClient: etcd}
 }
 
-func (r *etcdRegistry) Set(key, value string, ttl uint64) error {
+func (r *etcdRegistry) KeepAlive(key, value string, ttl uint64) error {
 	client := r.etcdClient
 
 	if resp, err := client.Create(key, value, ttl); err != nil {
