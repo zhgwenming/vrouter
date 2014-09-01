@@ -2,7 +2,7 @@ package main
 
 import (
 	//"fmt"
-	"github.com/spf13/cobra"
+	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/zhgwenming/vrouter/pkg/registry"
 	"log"
 )

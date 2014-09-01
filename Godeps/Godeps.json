@@ -1,0 +1,22 @@
+{
+	"ImportPath": "github.com/zhgwenming/vrouter",
+	"GoVersion": "go1.3",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/coreos/go-etcd/etcd",
+			"Comment": "v0.2.0-rc1-73-g895202b",
+			"Rev": "895202b626e0ff14fb87457c12112ed109b71b53"
+		},
+		{
+			"ImportPath": "github.com/spf13/cobra",
+			"Rev": "8d72c1e167c7ed194f28b625cbe835495aaa55fa"
+		},
+		{
+			"ImportPath": "github.com/spf13/pflag",
+			"Rev": "463bdc838f2b35e9307e91d480878bda5fff7232"
+		}
+	]
+}
