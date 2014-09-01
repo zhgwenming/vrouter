@@ -2,23 +2,28 @@ package registry
 
 import (
 	"fmt"
+	"github.com/coreos/go-etcd/etcd"
 	"github.com/spf13/cobra"
+	"log"
+	"strings"
+	"time"
 )
 
 var (
-	machines   string
-	hostNames  []string
-	subnet     string
-	etcdServer *string
+	machines    string
+	hostNames   []string
+	subnet      string
+	etcdServers []string
+	client      etcdRegistry
 )
 
 const (
 	DEFAULT_SUBNET = "10.0.0.0/16"
 )
 
-func Init(parent *cobra.Command, etcd *string) {
+func Init(parent *cobra.Command, etcd string) {
 
-	etcdServer = etcd
+	etcdServers = strings.Split(etcd, ",")
 
 	initCmd := &cobra.Command{
 		Use:   "init [subnet]",
@@ -32,6 +37,10 @@ func Init(parent *cobra.Command, etcd *string) {
 	parent.AddCommand(initCmd)
 }
 
+type etcdRegistry struct {
+	etcdClient *etcd.Client
+}
+
 func registryInit(cmd *cobra.Command, args []string) {
 
 	if len(args) > 0 {
@@ -40,5 +49,30 @@ func registryInit(cmd *cobra.Command, args []string) {
 		subnet = DEFAULT_SUBNET
 	}
 
-	fmt.Printf("vrouter init %s, etcd: %s\n", subnet, *etcdServer)
+	fmt.Printf("vrouter init %s, etcd: %s\n", subnet, etcdServers)
+	etcd := etcd.NewClient(etcdServers)
+	client = etcdRegistry{etcdClient: etcd}
+}
+
+func (r *etcdRegistry) Set(key, value string, ttl uint64) error {
+	client := r.etcdClient
+
+	if resp, err := client.Create(key, value, ttl); err != nil {
+		log.Printf("Error to create node: %s", err)
+		return err
+	} else {
+		//log.Printf("No instance exist on this node, starting")
+		go func() {
+			sleeptime := time.Duration(ttl / 3)
+			for {
+				index := resp.EtcdIndex
+				time.Sleep(sleeptime * time.Second)
+				resp, err = client.CompareAndSwap(key, value, ttl, value, index)
+				if err != nil {
+					log.Fatal("Unexpected lost our node lock", err)
+				}
+			}
+		}()
+		return nil
+	}
 }
