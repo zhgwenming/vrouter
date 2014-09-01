@@ -2,6 +2,7 @@ package registry
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/spf13/cobra"
@@ -20,7 +21,8 @@ var (
 )
 
 const (
-	DEFAULT_SUBNET = "10.0.0.0/16"
+	DEFAULT_SUBNET  = "10.0.0.0/16"
+	REGISTRY_PREFIX = "_vrouter"
 )
 
 func Init(parent *cobra.Command, etcd string) {
@@ -99,6 +101,16 @@ func registryInit(cmd *cobra.Command, args []string) {
 	//fmt.Printf("%v\n", nets)
 	etcd := etcd.NewClient(etcdServers)
 	client = etcdRegistry{etcdClient: etcd}
+
+	keyPrefix := REGISTRY_PREFIX + "/" + "route"
+	for i, node := range hostNames {
+		key := keyPrefix + "/" + node + "/" + "ipnet"
+		if value, err := json.Marshal(nets[i]); err != nil {
+			if _, err := etcd.Create(key, string(value), 0); err != nil {
+				log.Printf("Error to create node: %s", err)
+			}
+		}
+	}
 }
 
 func (r *etcdRegistry) KeepAlive(key, value string, ttl uint64) error {
