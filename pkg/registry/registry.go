@@ -56,7 +56,7 @@ func GetAllSubnet(ipnet *net.IPNet, hostbits int) []net.IPNet {
 	ip4 := ipnet.IP.To4()
 
 	numberSubnet := 1 << uint(netBits)
-	subnet := make([]net.IPNet, numberSubnet)
+	subnet := make([]net.IPNet, 0, numberSubnet)
 
 	for i := uint32(0); i < uint32(numberSubnet); i++ {
 		ipbuf := make([]byte, 4)
@@ -93,7 +93,10 @@ func registryInit(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
+	nets := GetAllSubnet(ipnet, 8)
+
 	fmt.Printf("vrouter init %s, %v, etcd: %s\n", subnet, ipnet, etcdServers)
+	//fmt.Printf("%v\n", nets)
 	etcd := etcd.NewClient(etcdServers)
 	client = etcdRegistry{etcdClient: etcd}
 }
