@@ -48,3 +48,32 @@ func (r *Registry) KeepAlive(hostname string) error {
 func KeepAlive(hostname string) error {
 	return registryClient.KeepAlive(hostname)
 }
+
+func (r *Registry) UpdateHostIP(hostname, ip string) error {
+	var err error
+
+	if hostname == "" {
+		hostname, err = os.Hostname()
+		if err != nil {
+			return err
+		}
+	}
+
+	if ip == "" {
+		ip = GetFirstIPAddr()
+	}
+
+	client := r.etcdClient
+
+	key := registryRoutePrefix() + "/" + hostname + "/" + "ipaddr"
+	value := ip
+	ttl := uint64(0)
+
+	// ignore response
+	if _, err := client.Create(key, value, ttl); err != nil {
+		log.Printf("Error to create node: %s", err)
+		return err
+	}
+
+	return nil
+}

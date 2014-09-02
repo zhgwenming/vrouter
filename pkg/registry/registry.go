@@ -1,7 +1,6 @@
 package registry
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
@@ -54,40 +53,8 @@ func Init(parent *cobra.Command, etcdServerStr string) {
 	parent.AddCommand(initCmd)
 }
 
-func GetAllSubnet(ipnet *net.IPNet, hostbits int) []net.IPNet {
-	ones, bits := ipnet.Mask.Size()
-	zeros := bits - ones
-
-	// network bits
-	netBits := zeros - hostbits
-	if netBits < 0 {
-		return []net.IPNet{}
-	}
-
-	ip4 := ipnet.IP.To4()
-
-	numberSubnet := 1 << uint(netBits)
-	subnet := make([]net.IPNet, 0, numberSubnet)
-
-	for i := uint32(0); i < uint32(numberSubnet); i++ {
-		ipbuf := make([]byte, 4)
-		number := i << uint(hostbits)
-		binary.BigEndian.PutUint32(ipbuf, number)
-
-		ip := (((uint32(ipbuf[0]) | uint32(ip4[0])) << 24) |
-			((uint32(ipbuf[1]) | uint32(ip4[1])) << 16) |
-			((uint32(ipbuf[2]) | uint32(ip4[2])) << 8) |
-			uint32(ipbuf[3]) | uint32(ip4[3]))
-		binary.BigEndian.PutUint32(ipbuf, ip)
-
-		ipmask := net.CIDRMask(bits-hostbits, bits)
-
-		subipnet := net.IPNet{ipbuf, ipmask}
-		subnet = append(subnet, subipnet)
-	}
-
-	return subnet
-
+func registryRoutePrefix() string {
+	return REGISTRY_PREFIX + "/" + "route"
 }
 
 func registryInit(cmd *cobra.Command, args []string) {
@@ -117,10 +84,11 @@ func registryInit(cmd *cobra.Command, args []string) {
 	fmt.Printf("vrouter init %s, %v, etcd: %s\n", globalSubnet, ipnet, etcdServer)
 	//fmt.Printf("%v\n", nets)
 
-	keyPrefix := REGISTRY_PREFIX + "/" + "route"
+	routePrefix := registryRoutePrefix()
+
 	//fmt.Printf("hostnames %d, %v\n", len(hostNames), hostNames)
 	for i, node := range hostNames {
-		key := keyPrefix + "/" + node + "/" + "ipnet"
+		key := routePrefix + "/" + node + "/" + "ipnet"
 		log.Printf("initialize config for host %s\n", node)
 		if value, err := json.Marshal(nets[i]); err != nil {
 			log.Fatal(err)
