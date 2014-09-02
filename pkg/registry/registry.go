@@ -31,8 +31,8 @@ func Init(parent *cobra.Command, etcd string) {
 
 	initCmd := &cobra.Command{
 		Use:   "init <machine1,machine2,..>",
-		Short: "init the registry",
-		Long:  "init the registry with speciffic ip network information",
+		Short: "init the machine registry",
+		Long:  "init the machine registry with specific ip network information",
 		Run:   registryInit,
 	}
 
