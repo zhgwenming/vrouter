@@ -22,7 +22,7 @@ func main() {
 	}
 
 	routerCmd.Flags().BoolVarP(&daemon, "daemon", "d", true, "whether to run as daemon mode")
-	routerCmd.PersistentFlags().StringVarP(&etcdServer, "etcd_server", "e", "127.0.0.1:4001", "etcd registry addr")
+	routerCmd.PersistentFlags().StringVarP(&etcdServer, "etcd_server", "e", "http://127.0.0.1:4001", "etcd registry addr")
 
 	registry.Init(routerCmd, etcdServer)
 
