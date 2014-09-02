@@ -2,6 +2,7 @@ package registry
 
 import (
 	"log"
+	"os"
 	"time"
 )
 
@@ -26,4 +27,20 @@ func (r *etcdRegistry) doKeepAlive(key, value string, ttl uint64) error {
 		}()
 		return nil
 	}
+}
+
+func (r *etcdRegistry) KeepAlive(hostname string) error {
+	var err error
+	keyPrefix := REGISTRY_PREFIX + "/" + "host"
+	if len(hostname) == 0 {
+		hostname, err = os.Hostname()
+		if err != nil {
+			return err
+		}
+	}
+
+	key := keyPrefix + "/" + hostname
+	value := "alive"
+	ttl := uint64(5)
+	return r.doKeepAlive(key, value, ttl)
 }
