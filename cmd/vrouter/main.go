@@ -9,6 +9,7 @@ import (
 
 var (
 	daemon     bool
+	gateway    bool
 	hostname   string
 	etcdServer string
 )
@@ -29,6 +30,7 @@ func main() {
 	}
 
 	routerCmd.Flags().BoolVarP(&daemon, "daemon", "d", false, "whether to run as daemon mode")
+	routerCmd.Flags().BoolVarP(&gateway, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
 	routerCmd.Flags().StringVarP(&hostname, "hostname", "H", "", "hostname to use in daemon mode")
 	routerCmd.PersistentFlags().StringVarP(&etcdServer, "etcd_server", "e", "http://127.0.0.1:4001", "etcd registry addr")
 
