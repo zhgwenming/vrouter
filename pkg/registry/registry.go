@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	machines    string
-	hostNames   []string
-	subnet      string
-	etcdServers []string
-	client      etcdRegistry
+	machines     string
+	hostNames    []string
+	globalSubnet string
+	etcdServers  []string
+	client       etcdRegistry
 )
 
 const (
@@ -30,13 +30,13 @@ func Init(parent *cobra.Command, etcd string) {
 	etcdServers = strings.Split(etcd, ",")
 
 	initCmd := &cobra.Command{
-		Use:   "init [subnet]",
+		Use:   "init <machine1,machine2,..>",
 		Short: "init the registry",
 		Long:  "init the registry with speciffic ip network information",
 		Run:   registryInit,
 	}
 
-	initCmd.Flags().StringVarP(&machines, "machines", "m", "", "List of machines")
+	initCmd.Flags().StringVarP(&globalSubnet, "ipnet", "n", DEFAULT_SUBNET, "cidr ip subnet information")
 
 	parent.AddCommand(initCmd)
 }
@@ -84,26 +84,33 @@ func GetAllSubnet(ipnet *net.IPNet, hostbits int) []net.IPNet {
 func registryInit(cmd *cobra.Command, args []string) {
 
 	if len(args) > 0 {
-		subnet = args[0]
+		machines = args[0]
+		// just make slice if machines is not empty
+		if len(machines) > 0 {
+			hostNames = strings.Split(machines, ",")
+		} else {
+			cmd.Help()
+			log.Fatal("Empty machine list specified")
+		}
 	} else {
-		subnet = DEFAULT_SUBNET
+		log.Fatal("No machine list specified")
 	}
 
-	_, ipnet, err := net.ParseCIDR(subnet)
+	_, ipnet, err := net.ParseCIDR(globalSubnet)
 
-	hostNames = strings.Split(machines, ",")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	nets := GetAllSubnet(ipnet, 8)
 
-	fmt.Printf("vrouter init %s, %v, etcd: %s\n", subnet, ipnet, etcdServers)
+	fmt.Printf("vrouter init %s, %v, etcd: %s\n", globalSubnet, ipnet, etcdServers)
 	//fmt.Printf("%v\n", nets)
 	etcd := etcd.NewClient(etcdServers)
 	client = etcdRegistry{etcdClient: etcd}
 
 	keyPrefix := REGISTRY_PREFIX + "/" + "route"
+	fmt.Printf("hostnames %d, %v\n", len(hostNames), hostNames)
 	for i, node := range hostNames {
 		key := keyPrefix + "/" + node + "/" + "ipnet"
 		log.Printf("host %s\n", node)
