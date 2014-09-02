@@ -110,10 +110,10 @@ func registryInit(cmd *cobra.Command, args []string) {
 	client = etcdRegistry{etcdClient: etcd}
 
 	keyPrefix := REGISTRY_PREFIX + "/" + "route"
-	fmt.Printf("hostnames %d, %v\n", len(hostNames), hostNames)
+	//fmt.Printf("hostnames %d, %v\n", len(hostNames), hostNames)
 	for i, node := range hostNames {
 		key := keyPrefix + "/" + node + "/" + "ipnet"
-		log.Printf("host %s\n", node)
+		log.Printf("initialize config for host %s\n", node)
 		if value, err := json.Marshal(nets[i]); err != nil {
 			log.Fatal(err)
 		} else {
