@@ -93,6 +93,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 			log.Fatal("Empty machine list specified")
 		}
 	} else {
+		cmd.Help()
 		log.Fatal("No machine list specified")
 	}
 
