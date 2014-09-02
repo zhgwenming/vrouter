@@ -9,19 +9,27 @@ import (
 
 var (
 	daemon     bool
+	hostname   string
 	etcdServer string
 )
+
+func virtRouter(c *cobra.Command, args []string) {
+	if daemon {
+		registry.KeepAlive(hostname)
+	} else {
+		c.Help()
+	}
+}
 
 func main() {
 	routerCmd := &cobra.Command{
 		Use:  "vrouter",
 		Long: "vrouter is a tool for routing distributed Docker containers.\n\n",
-		Run: func(c *cobra.Command, args []string) {
-			c.Help()
-		},
+		Run:  virtRouter,
 	}
 
-	routerCmd.Flags().BoolVarP(&daemon, "daemon", "d", true, "whether to run as daemon mode")
+	routerCmd.Flags().BoolVarP(&daemon, "daemon", "d", false, "whether to run as daemon mode")
+	routerCmd.Flags().StringVarP(&hostname, "hostname", "H", "", "hostname to use in daemon mode")
 	routerCmd.PersistentFlags().StringVarP(&etcdServer, "etcd_server", "e", "http://127.0.0.1:4001", "etcd registry addr")
 
 	registry.Init(routerCmd, etcdServer)

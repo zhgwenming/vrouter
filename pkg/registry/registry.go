@@ -12,11 +12,11 @@ import (
 )
 
 var (
-	machines     string
-	hostNames    []string
-	globalSubnet string
-	etcdServers  []string
-	client       etcdRegistry
+	machines       string
+	hostNames      []string
+	globalSubnet   string
+	etcdServer     []string
+	registryClient *Registry
 )
 
 const (
@@ -24,10 +24,24 @@ const (
 	REGISTRY_PREFIX = "_vrouter"
 )
 
-func Init(parent *cobra.Command, etcd string) {
+type Registry struct {
+	etcdClient *etcd.Client
+}
 
-	etcdServers = strings.Split(etcd, ",")
+func NewRegistry(etcdClient *etcd.Client) *Registry {
+	return &Registry{etcdClient: etcdClient}
+}
 
+// create etcd client
+// register cobra subcommand
+func Init(parent *cobra.Command, etcdServerStr string) {
+
+	etcdServer = strings.Split(etcdServerStr, ",")
+
+	etcdClient := etcd.NewClient(etcdServer)
+	registryClient = NewRegistry(etcdClient)
+
+	// register new subcommand
 	initCmd := &cobra.Command{
 		Use:   "init <machine1,machine2,..>",
 		Short: "init the machine registry",
@@ -38,10 +52,6 @@ func Init(parent *cobra.Command, etcd string) {
 	initCmd.Flags().StringVarP(&globalSubnet, "ipnet", "n", DEFAULT_SUBNET, "cidr ip subnet information")
 
 	parent.AddCommand(initCmd)
-}
-
-type etcdRegistry struct {
-	etcdClient *etcd.Client
 }
 
 func GetAllSubnet(ipnet *net.IPNet, hostbits int) []net.IPNet {
@@ -104,10 +114,8 @@ func registryInit(cmd *cobra.Command, args []string) {
 
 	nets := GetAllSubnet(ipnet, 8)
 
-	fmt.Printf("vrouter init %s, %v, etcd: %s\n", globalSubnet, ipnet, etcdServers)
+	fmt.Printf("vrouter init %s, %v, etcd: %s\n", globalSubnet, ipnet, etcdServer)
 	//fmt.Printf("%v\n", nets)
-	etcd := etcd.NewClient(etcdServers)
-	client = etcdRegistry{etcdClient: etcd}
 
 	keyPrefix := REGISTRY_PREFIX + "/" + "route"
 	//fmt.Printf("hostnames %d, %v\n", len(hostNames), hostNames)
@@ -117,7 +125,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 		if value, err := json.Marshal(nets[i]); err != nil {
 			log.Fatal(err)
 		} else {
-			if _, err := etcd.Create(key, string(value), 0); err != nil {
+			if _, err := registryClient.etcdClient.Create(key, string(value), 0); err != nil {
 				log.Printf("Error to create node: %s", err)
 			}
 		}

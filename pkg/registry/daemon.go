@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (r *etcdRegistry) doKeepAlive(key, value string, ttl uint64) error {
+func (r *Registry) doKeepAlive(key, value string, ttl uint64) error {
 	client := r.etcdClient
 
 	if resp, err := client.Create(key, value, ttl); err != nil {
@@ -29,7 +29,7 @@ func (r *etcdRegistry) doKeepAlive(key, value string, ttl uint64) error {
 	}
 }
 
-func (r *etcdRegistry) KeepAlive(hostname string) error {
+func (r *Registry) KeepAlive(hostname string) error {
 	var err error
 	keyPrefix := REGISTRY_PREFIX + "/" + "host"
 	if len(hostname) == 0 {
@@ -43,4 +43,8 @@ func (r *etcdRegistry) KeepAlive(hostname string) error {
 	value := "alive"
 	ttl := uint64(5)
 	return r.doKeepAlive(key, value, ttl)
+}
+
+func KeepAlive(hostname string) error {
+	return registryClient.KeepAlive(hostname)
 }
