@@ -19,7 +19,12 @@ var (
 func virtRouter(c *cobra.Command, args []string) {
 	if daemon {
 		registry.KeepAlive(hostname)
-		registry.UpdateHostIP(hostname, hostip)
+		ipnet, err := registry.BindIPNet(hostname, hostip)
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			log.Printf("%v\n", ipnet)
+		}
 	} else {
 		c.Help()
 	}

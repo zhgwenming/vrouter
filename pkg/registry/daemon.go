@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -53,20 +54,26 @@ func KeepAlive(hostname string) error {
 	return registryClient.KeepAlive(hostname)
 }
 
-func (r *Registry) UpdateHostIP(hostname, ip string) error {
-	var err error
+func (r *Registry) getIPNet(hostname string) (*net.IPNet, error) {
+	client := r.etcdClient
+	key := registryRoutePrefix() + "/" + hostname + "/" + "ipnet"
 
-	if hostname == "" {
-		hostname, err = os.Hostname()
-		if err != nil {
-			return err
+	ipnet := &net.IPNet{}
+
+	if resp, err := client.Get(key, false, false); err != nil {
+		return nil, err
+	} else {
+		value := resp.Node.Value
+		if err = json.Unmarshal([]byte(value), ipnet); err != nil {
+			fmt.Printf("%v\n", value)
+			return nil, err
+		} else {
+			return ipnet, nil
 		}
 	}
+}
 
-	if ip == "" {
-		ip = GetFirstIPAddr()
-	}
-
+func (r *Registry) updateHostIP(hostname, ip string) error {
 	client := r.etcdClient
 
 	key := registryRoutePrefix() + "/" + hostname + "/" + "ipaddr"
@@ -82,8 +89,34 @@ func (r *Registry) UpdateHostIP(hostname, ip string) error {
 	return nil
 }
 
-func UpdateHostIP(hostname string, ip net.IP) error {
-	return registryClient.UpdateHostIP(hostname, string(ip))
+// associate to nic ip address to an allocated IPNet
+func (r *Registry) BindIPNet(hostname, ip string) (*net.IPNet, error) {
+	var err error
+	var ipnet *net.IPNet
+
+	if hostname == "" {
+		hostname, err = os.Hostname()
+		if err != nil {
+			return ipnet, err
+		}
+	}
+
+	if ip == "" {
+		ip = GetFirstIPAddr()
+	}
+
+	// get node IPNet info first
+	if ipnet, err = r.getIPNet(hostname); err != nil {
+		return ipnet, err
+	}
+
+	err = r.updateHostIP(hostname, ip)
+
+	return ipnet, err
+}
+
+func BindIPNet(hostname string, ip net.IP) (*net.IPNet, error) {
+	return registryClient.BindIPNet(hostname, string(ip))
 }
 
 func WritePid(pidfile string) error {
