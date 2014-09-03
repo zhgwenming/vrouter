@@ -1,7 +1,6 @@
 package registry
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -58,13 +57,11 @@ func (r *Registry) getIPNet(hostname string) (*net.IPNet, error) {
 	client := r.etcdClient
 	key := registryRoutePrefix() + "/" + hostname + "/" + "ipnet"
 
-	ipnet := &net.IPNet{}
-
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
 	} else {
 		value := resp.Node.Value
-		if err = json.Unmarshal([]byte(value), ipnet); err != nil {
+		if _, ipnet, err := net.ParseCIDR(value); err != nil {
 			fmt.Printf("%v\n", value)
 			return nil, err
 		} else {

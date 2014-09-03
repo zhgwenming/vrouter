@@ -1,7 +1,6 @@
 package registry
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
@@ -90,12 +89,9 @@ func registryInit(cmd *cobra.Command, args []string) {
 	for i, node := range hostNames {
 		key := routePrefix + "/" + node + "/" + "ipnet"
 		log.Printf("initialize config for host %s\n", node)
-		if value, err := json.Marshal(nets[i]); err != nil {
-			log.Fatal(err)
-		} else {
-			if _, err := registryClient.etcdClient.Create(key, string(value), 0); err != nil {
-				log.Printf("Error to create node: %s", err)
-			}
+		if _, err := registryClient.etcdClient.Create(key, nets[i].String(), 0); err != nil {
+			log.Printf("Error to create node: %s", err)
 		}
+
 	}
 }
