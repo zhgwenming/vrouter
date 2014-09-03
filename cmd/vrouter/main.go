@@ -21,9 +21,9 @@ func virtRouter(c *cobra.Command, args []string) {
 		registry.KeepAlive(hostname)
 		ipnet, err := registry.BindIPNet(hostname, hostip)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to bind ipnet, not initialized? - ", err)
 		} else {
-			log.Printf("%v\n", ipnet)
+			log.Printf("main: get ipnet %v\n", ipnet)
 		}
 	} else {
 		c.Help()
