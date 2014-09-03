@@ -3,6 +3,7 @@ package registry
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"strconv"
 	"syscall"
@@ -79,6 +80,10 @@ func (r *Registry) UpdateHostIP(hostname, ip string) error {
 	}
 
 	return nil
+}
+
+func UpdateHostIP(hostname string, ip net.IP) error {
+	return registryClient.UpdateHostIP(hostname, string(ip))
 }
 
 func WritePid(pidfile string) error {
