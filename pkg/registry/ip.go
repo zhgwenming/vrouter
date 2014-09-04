@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-func GetLocalIPNetv4() []*net.IPNet {
+func ListIPNet(ip4Only bool) []*net.IPNet {
 	ipnets := make([]*net.IPNet, 0, 4)
 	ifaces, _ := net.Interfaces()
 
@@ -27,7 +27,7 @@ func GetLocalIPNetv4() []*net.IPNet {
 				}
 
 				ip4 := ipnet.IP.To4()
-				if ip4 == nil {
+				if ip4Only && ip4 == nil {
 					continue
 				}
 
