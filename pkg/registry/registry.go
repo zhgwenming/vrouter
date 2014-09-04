@@ -14,7 +14,7 @@ var (
 	hostNames      []string
 	globalSubnet   string
 	etcdServer     []string
-	registryClient *Registry
+	registryClient *etcd.Client
 )
 
 const (
@@ -22,22 +22,13 @@ const (
 	REGISTRY_PREFIX = "_vrouter"
 )
 
-type Registry struct {
-	etcdClient *etcd.Client
-}
-
-func NewRegistry(etcdClient *etcd.Client) *Registry {
-	return &Registry{etcdClient: etcdClient}
-}
-
 // create etcd client
 // register cobra subcommand
 func Init(parent *cobra.Command, etcdServerStr string) {
 
 	etcdServer = strings.Split(etcdServerStr, ",")
 
-	etcdClient := etcd.NewClient(etcdServer)
-	registryClient = NewRegistry(etcdClient)
+	registryClient = etcd.NewClient(etcdServer)
 
 	// register new subcommand
 	initCmd := &cobra.Command{
@@ -89,7 +80,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 	for i, node := range hostNames {
 		key := routePrefix + "/" + node + "/" + "ipnet"
 		log.Printf("initialize config for host %s\n", node)
-		if _, err := registryClient.etcdClient.Create(key, nets[i].String(), 0); err != nil {
+		if _, err := registryClient.Create(key, nets[i].String(), 0); err != nil {
 			log.Printf("Error to create node: %s", err)
 		}
 

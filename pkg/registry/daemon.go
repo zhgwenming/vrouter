@@ -2,6 +2,7 @@ package registry
 
 import (
 	"fmt"
+	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"log"
 	"net"
 	"os"
@@ -10,8 +11,20 @@ import (
 	"time"
 )
 
-func (r *Registry) doKeepAlive(key, value string, ttl uint64) error {
-	client := r.etcdClient
+var (
+	vrouterDaemon *Daemon
+)
+
+type Daemon struct {
+	etcdClient *etcd.Client
+}
+
+func NewDaemon(etcdClient *etcd.Client) *Daemon {
+	return &Daemon{etcdClient: etcdClient}
+}
+
+func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
+	client := d.etcdClient
 
 	if resp, err := client.Create(key, value, ttl); err != nil {
 		log.Printf("Error to create node: %s", err)
@@ -33,7 +46,7 @@ func (r *Registry) doKeepAlive(key, value string, ttl uint64) error {
 	}
 }
 
-func (r *Registry) KeepAlive(hostname string) error {
+func (d *Daemon) KeepAlive(hostname string) error {
 	var err error
 	keyPrefix := REGISTRY_PREFIX + "/" + "host"
 	if len(hostname) == 0 {
@@ -46,15 +59,15 @@ func (r *Registry) KeepAlive(hostname string) error {
 	key := keyPrefix + "/" + hostname
 	value := "alive"
 	ttl := uint64(5)
-	return r.doKeepAlive(key, value, ttl)
+	return d.doKeepAlive(key, value, ttl)
 }
 
 func KeepAlive(hostname string) error {
-	return registryClient.KeepAlive(hostname)
+	return vrouterDaemon.KeepAlive(hostname)
 }
 
-func (r *Registry) getIPNet(hostname string) (*net.IPNet, error) {
-	client := r.etcdClient
+func (d *Daemon) getIPNet(hostname string) (*net.IPNet, error) {
+	client := d.etcdClient
 	key := registryRoutePrefix() + "/" + hostname + "/" + "ipnet"
 
 	if resp, err := client.Get(key, false, false); err != nil {
@@ -70,8 +83,8 @@ func (r *Registry) getIPNet(hostname string) (*net.IPNet, error) {
 	}
 }
 
-func (r *Registry) updateHostIP(hostname, ip string) error {
-	client := r.etcdClient
+func (d *Daemon) updateHostIP(hostname, ip string) error {
+	client := d.etcdClient
 
 	key := registryRoutePrefix() + "/" + hostname + "/" + "ipaddr"
 	value := ip
@@ -87,7 +100,7 @@ func (r *Registry) updateHostIP(hostname, ip string) error {
 }
 
 // associate to nic ip address to an allocated IPNet
-func (r *Registry) BindIPNet(hostname, ip string) (*net.IPNet, error) {
+func (d *Daemon) BindIPNet(hostname, ip string) (*net.IPNet, error) {
 	var err error
 	var ipnet *net.IPNet
 
@@ -103,17 +116,17 @@ func (r *Registry) BindIPNet(hostname, ip string) (*net.IPNet, error) {
 	}
 
 	// get node IPNet info first
-	if ipnet, err = r.getIPNet(hostname); err != nil {
+	if ipnet, err = d.getIPNet(hostname); err != nil {
 		return ipnet, err
 	}
 
-	err = r.updateHostIP(hostname, ip)
+	err = d.updateHostIP(hostname, ip)
 
 	return ipnet, err
 }
 
 func BindIPNet(hostname string, ip net.IP) (*net.IPNet, error) {
-	return registryClient.BindIPNet(hostname, string(ip))
+	return vrouterDaemon.BindIPNet(hostname, string(ip))
 }
 
 func WritePid(pidfile string) error {
