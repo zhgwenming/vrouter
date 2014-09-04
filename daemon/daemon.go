@@ -3,6 +3,7 @@ package daemon
 import (
 	"fmt"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
 	"log"
 	"net"
 	"os"
@@ -12,7 +13,11 @@ import (
 )
 
 var (
-	vrouterDaemon *Daemon
+	vrouter    *Daemon
+	daemonMode bool
+	gateway    bool
+	hostname   string
+	hostip     net.IP
 )
 
 type Daemon struct {
@@ -21,6 +26,36 @@ type Daemon struct {
 
 func NewDaemon(etcdClient *etcd.Client) *Daemon {
 	return &Daemon{etcdClient: etcdClient}
+}
+
+func DaemonInit() *cobra.Command {
+	routerCmd := &cobra.Command{
+		Use:  "vrouter",
+		Long: "vrouter is a tool for routing distributed Docker containers.\n\n",
+		Run:  Run,
+	}
+
+	// vrouter flags
+	routerCmd.Flags().BoolVarP(&daemonMode, "daemon", "d", false, "whether to run as daemon mode")
+	routerCmd.Flags().BoolVarP(&gateway, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
+	routerCmd.Flags().StringVarP(&hostname, "hostname", "n", "", "hostname to use in daemon mode")
+	routerCmd.Flags().IPVarP(&hostip, "hostip", "i", []byte{}, "use specified ip instead auto detected ip address")
+
+	return routerCmd
+}
+
+func Run(c *cobra.Command, args []string) {
+	if daemonMode {
+		vrouter.KeepAlive(hostname)
+		ipnet, err := BindIPNet(hostname, hostip)
+		if err != nil {
+			log.Fatal("Failed to bind ipnet, not initialized? - ", err)
+		} else {
+			log.Printf("main: get ipnet %v\n", ipnet)
+		}
+	} else {
+		c.Help()
+	}
 }
 
 func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
@@ -63,7 +98,7 @@ func (d *Daemon) KeepAlive(hostname string) error {
 }
 
 func KeepAlive(hostname string) error {
-	return vrouterDaemon.KeepAlive(hostname)
+	return vrouter.KeepAlive(hostname)
 }
 
 func (d *Daemon) getIPNet(hostname string) (*net.IPNet, error) {
@@ -126,7 +161,7 @@ func (d *Daemon) BindIPNet(hostname, ip string) (*net.IPNet, error) {
 }
 
 func BindIPNet(hostname string, ip net.IP) (*net.IPNet, error) {
-	return vrouterDaemon.BindIPNet(hostname, string(ip))
+	return vrouter.BindIPNet(hostname, string(ip))
 }
 
 func WritePid(pidfile string) error {
