@@ -6,6 +6,40 @@ import (
 	"net"
 )
 
+func GetLocalIPNetv4() []*net.IPNet {
+	ipnets := make([]*net.IPNet, 0, 4)
+	ifaces, _ := net.Interfaces()
+
+	for _, i := range ifaces {
+		if i.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+
+		if addrs, err := i.Addrs(); err != nil {
+			continue
+		} else {
+			for _, ipaddr := range addrs {
+				//log.Printf("%v", ipaddr)
+				ipnet, ok := ipaddr.(*net.IPNet)
+
+				if !ok {
+					log.Fatal("assertion err: %v\n", ipnet)
+				}
+
+				ip4 := ipnet.IP.To4()
+				if ip4 == nil {
+					continue
+				}
+
+				if !ip4.IsLoopback() {
+					ipnets = append(ipnets, ipnet)
+				}
+			}
+		}
+	}
+	return ipnets
+}
+
 func GetFirstIPAddr() (addr string) {
 	ifaces, _ := net.Interfaces()
 
