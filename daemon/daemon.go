@@ -1,4 +1,4 @@
-package registry
+package daemon
 
 import (
 	"fmt"
