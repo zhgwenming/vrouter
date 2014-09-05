@@ -21,11 +21,9 @@ var (
 
 // create etcd client
 // register cobra subcommand
-func InitCmd(parent *cobra.Command, etcdServerStr string) {
+func InitCmd(parent *cobra.Command, etcdClient *etcd.Client) {
 
-	etcdServer = strings.Split(etcdServerStr, ",")
-
-	registryClient = etcd.NewClient(etcdServer)
+	registryClient = etcdClient
 
 	// register new subcommand
 	initCmd := &cobra.Command{
