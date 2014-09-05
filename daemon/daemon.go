@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
+	"github.com/zhgwenming/vrouter/netinfo"
+	"github.com/zhgwenming/vrouter/registry"
 	"log"
 	"net"
 	"os"
@@ -28,7 +30,7 @@ func NewDaemon(etcdClient *etcd.Client) *Daemon {
 	return &Daemon{etcdClient: etcdClient}
 }
 
-func DaemonInit() *cobra.Command {
+func InitCmd() *cobra.Command {
 	routerCmd := &cobra.Command{
 		Use:  "vrouter",
 		Long: "vrouter is a tool for routing distributed Docker containers.\n\n",
@@ -83,7 +85,7 @@ func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
 
 func (d *Daemon) KeepAlive(hostname string) error {
 	var err error
-	keyPrefix := REGISTRY_PREFIX + "/" + "host"
+	keyPrefix := registry.REGISTRY_PREFIX + "/" + "host"
 	if len(hostname) == 0 {
 		hostname, err = os.Hostname()
 		if err != nil {
@@ -103,7 +105,7 @@ func KeepAlive(hostname string) error {
 
 func (d *Daemon) getIPNet(hostname string) (*net.IPNet, error) {
 	client := d.etcdClient
-	key := registryRoutePrefix() + "/" + hostname + "/" + "ipnet"
+	key := registry.RoutePrefix() + "/" + hostname + "/" + "ipnet"
 
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
@@ -121,7 +123,7 @@ func (d *Daemon) getIPNet(hostname string) (*net.IPNet, error) {
 func (d *Daemon) updateHostIP(hostname, ip string) error {
 	client := d.etcdClient
 
-	key := registryRoutePrefix() + "/" + hostname + "/" + "ipaddr"
+	key := registry.RoutePrefix() + "/" + hostname + "/" + "ipaddr"
 	value := ip
 	ttl := uint64(0)
 
@@ -147,7 +149,7 @@ func (d *Daemon) BindIPNet(hostname, ip string) (*net.IPNet, error) {
 	}
 
 	if ip == "" {
-		ip = GetFirstIPAddr()
+		ip = netinfo.GetFirstIPAddr()
 	}
 
 	// get node IPNet info first

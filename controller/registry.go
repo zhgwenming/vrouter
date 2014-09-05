@@ -1,9 +1,11 @@
-package daemon
+package controller
 
 import (
 	"fmt"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
+	"github.com/zhgwenming/vrouter/netinfo"
+	"github.com/zhgwenming/vrouter/registry"
 	"log"
 	"net"
 	"strings"
@@ -17,14 +19,9 @@ var (
 	registryClient *etcd.Client
 )
 
-const (
-	DEFAULT_SUBNET  = "10.0.0.0/16"
-	REGISTRY_PREFIX = "_vrouter"
-)
-
 // create etcd client
 // register cobra subcommand
-func Init(parent *cobra.Command, etcdServerStr string) {
+func InitCmd(parent *cobra.Command, etcdServerStr string) {
 
 	etcdServer = strings.Split(etcdServerStr, ",")
 
@@ -38,13 +35,9 @@ func Init(parent *cobra.Command, etcdServerStr string) {
 		Run:   registryInit,
 	}
 
-	initCmd.Flags().StringVarP(&globalSubnet, "ipnet", "n", DEFAULT_SUBNET, "cidr ip subnet information")
+	initCmd.Flags().StringVarP(&globalSubnet, "ipnet", "n", registry.DEFAULT_SUBNET, "cidr ip subnet information")
 
 	parent.AddCommand(initCmd)
-}
-
-func registryRoutePrefix() string {
-	return REGISTRY_PREFIX + "/" + "route"
 }
 
 func registryInit(cmd *cobra.Command, args []string) {
@@ -69,12 +62,12 @@ func registryInit(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	nets := GetAllSubnet(ipnet, 8)
+	nets := netinfo.GetAllSubnet(ipnet, 8)
 
 	fmt.Printf("vrouter init %s, %v, etcd: %s\n", globalSubnet, ipnet, etcdServer)
 	//fmt.Printf("%v\n", nets)
 
-	routePrefix := registryRoutePrefix()
+	routePrefix := registry.RoutePrefix()
 
 	//fmt.Printf("hostnames %d, %v\n", len(hostNames), hostNames)
 	for i, node := range hostNames {
