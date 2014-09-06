@@ -73,20 +73,58 @@ func Run(c *cobra.Command, args []string) {
 		vrouter = NewDaemon(etcdClient)
 
 		vrouter.KeepAlive(hostname)
-		ipnet, err := BindDockerNet(hostname, hostip)
+		dockerNet, err := BindDockerNet(hostname, hostip)
 		if err != nil {
 			log.Fatal("Failed to bind router interface: ", err)
 		} else {
-			log.Printf("daemon: get ipnet %v\n", ipnet)
+			log.Printf("daemon: get ipnet %v\n", dockerNet)
 		}
 
-		err = vrouter.createBridgeIface(bridge, ipnet.String())
+		err = vrouter.createBridgeIface(bridge, dockerNet.String())
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		err = vrouter.ManageRoute()
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	} else {
 		c.Help()
 	}
+}
+
+func (d *Daemon) ManageRoute() error {
+	routes := make([]Route, 0, 256)
+	client := d.etcdClient
+
+	routerPath := registry.VRouterPrefix()
+	if resp, err := client.Get(routerPath, false, true); err != nil {
+		return err
+	} else {
+		hosts := resp.Node.Nodes
+		for _, host := range hosts {
+			hostKey := host.Key
+
+			// extract the host routerif/dockerbr info first
+			routerNet := make(map[string]string, 2)
+			for _, ipnet := range host.Nodes {
+				routerNet[ipnet.Key] = ipnet.Value
+			}
+
+			routerIfacePath := hostKey + "/" + "routerif"
+			routerIface := routerNet[routerIfacePath]
+			if routerIface != "" && routerIface != hostip {
+				dockerIfacePath := hostKey + "/" + "dockerbr"
+				dockerIface := routerNet[dockerIfacePath]
+				r := Route{routerIface: routerIface, dockerIface: dockerIface}
+				routes = append(routes, r)
+			}
+		}
+	}
+
+	return nil
 }
 
 func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
