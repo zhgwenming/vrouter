@@ -10,12 +10,15 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
 
 var (
-	vrouter    *Daemon
+	vrouter     *Daemon
+	etcdServers *string
+
 	daemonMode bool
 	gateway    bool
 	hostname   string
@@ -30,7 +33,10 @@ func NewDaemon(etcdClient *etcd.Client) *Daemon {
 	return &Daemon{etcdClient: etcdClient}
 }
 
-func InitCmd() *cobra.Command {
+func InitCmd(servers *string) *cobra.Command {
+
+	etcdServers = servers
+
 	routerCmd := &cobra.Command{
 		Use:  "vrouter",
 		Long: "vrouter is a tool for routing distributed Docker containers.\n\n",
@@ -56,6 +62,10 @@ func InitCmd() *cobra.Command {
 
 func Run(c *cobra.Command, args []string) {
 	if daemonMode {
+		servers := strings.Split(*etcdServers, ",")
+		etcdClient := etcd.NewClient(servers)
+		vrouter = NewDaemon(etcdClient)
+
 		vrouter.KeepAlive(hostname)
 		ipnet, err := BindHostNet(hostname, hostip)
 		if err != nil {

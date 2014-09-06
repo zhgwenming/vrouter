@@ -13,7 +13,7 @@ var (
 
 func main() {
 
-	routerCmd := daemon.InitCmd()
+	routerCmd := daemon.InitCmd(&etcdServers)
 	routerCmd.PersistentFlags().StringVarP(&etcdServers, "etcd_servers", "e", "http://127.0.0.1:4001", "etcd server uri")
 
 	controller.InitCmd(routerCmd, &etcdServers)
