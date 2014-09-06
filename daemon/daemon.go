@@ -67,11 +67,11 @@ func Run(c *cobra.Command, args []string) {
 		vrouter = NewDaemon(etcdClient)
 
 		vrouter.KeepAlive(hostname)
-		ipnet, err := BindHostNet(hostname, hostip)
+		ipnet, err := BindDockerNet(hostname, hostip)
 		if err != nil {
-			log.Fatal("Failed to bind ipnet, not initialized? - ", err)
+			log.Fatal("Failed to bind router interface: ", err)
 		} else {
-			log.Printf("main: get ipnet %v\n", ipnet)
+			log.Printf("daemon: get ipnet %v\n", ipnet)
 		}
 	} else {
 		c.Help()
@@ -129,21 +129,29 @@ func (d *Daemon) getDockerIPNet(hostname string) (*net.IPNet, error) {
 		return nil, err
 	} else {
 		value := resp.Node.Value
-		if _, ipnet, err := net.ParseCIDR(value); err != nil {
+		if ip, ipnet, err := net.ParseCIDR(value); err != nil {
 			fmt.Printf("%v\n", value)
 			return nil, err
 		} else {
+			ipnet.IP = ip
 			return ipnet, nil
 		}
 	}
 }
 
-func (d *Daemon) updateTenantNetIP(hostname, ip string) error {
+func (d *Daemon) updateRouterInterfaceNetIP(hostname, ip string) error {
 	client := d.etcdClient
 
 	key := registry.RouterInterfacePath(hostname)
 	value := ip
 	ttl := uint64(0)
+
+	if resp, err := client.Get(key, false, false); err == nil {
+		if r := resp.Node.Value; r == value {
+			log.Printf("found exist routerif for node: %s", hostname)
+			return nil
+		}
+	}
 
 	// ignore response
 	if _, err := client.Create(key, value, ttl); err != nil {
@@ -155,7 +163,7 @@ func (d *Daemon) updateTenantNetIP(hostname, ip string) error {
 }
 
 // associate to nic ip address to an allocated IPNet
-func (d *Daemon) BindHostNet(hostname, ip string) (*net.IPNet, error) {
+func (d *Daemon) BindDockerNet(hostname, ip string) (*net.IPNet, error) {
 	var err error
 	var hostnet *net.IPNet
 
@@ -175,13 +183,13 @@ func (d *Daemon) BindHostNet(hostname, ip string) (*net.IPNet, error) {
 		return hostnet, err
 	}
 
-	err = d.updateTenantNetIP(hostname, ip)
+	err = d.updateRouterInterfaceNetIP(hostname, ip)
 
 	return hostnet, err
 }
 
-func BindHostNet(hostname, ip string) (*net.IPNet, error) {
-	return vrouter.BindHostNet(hostname, ip)
+func BindDockerNet(hostname, ip string) (*net.IPNet, error) {
+	return vrouter.BindDockerNet(hostname, ip)
 }
 
 func WritePid(pidfile string) error {
