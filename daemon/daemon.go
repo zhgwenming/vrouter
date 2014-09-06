@@ -2,9 +2,9 @@ package daemon
 
 import (
 	"fmt"
+	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/docker/docker/pkg/parsers/kernel"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
-	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/zhgwenming/vrouter/netinfo"
 	"github.com/zhgwenming/vrouter/registry"
@@ -55,9 +55,11 @@ func InitCmd(servers *string) *cobra.Command {
 	// vrouter flags
 	cmdflags := routerCmd.Flags()
 
+	hostname, _ = os.Hostname()
+
 	cmdflags.BoolVarP(&daemonMode, "daemon", "d", false, "whether to run as daemon mode")
 	cmdflags.BoolVarP(&gateway, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
-	cmdflags.StringVarP(&hostname, "hostname", "n", "", "hostname to use in daemon mode")
+	cmdflags.StringVarP(&hostname, "hostname", "n", hostname, "hostname to use in daemon mode")
 	cmdflags.StringVarP(&hostip, "hostip", "i", ipnet.String(), "use specified ip/mask instead auto detected ip address")
 	cmdflags.StringVarP(&bridge, "bridge", "b", "docker0", "bridge name to setup")
 
