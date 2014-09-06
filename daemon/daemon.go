@@ -2,8 +2,8 @@ package daemon
 
 import (
 	"fmt"
-	"github.com/docker/docker/pkg/parsers/kernel"
-	"github.com/docker/libcontainer/netlink"
+	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/docker/docker/pkg/parsers/kernel"
+	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/zhgwenming/vrouter/netinfo"
