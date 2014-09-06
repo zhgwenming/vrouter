@@ -65,8 +65,6 @@ func registryInit(cmd *cobra.Command, args []string) {
 	fmt.Printf("vrouter init %s, %v, etcd: %s\n", globalSubnet, ipnet, etcdServer)
 	//fmt.Printf("%v\n", nets)
 
-	routePrefix := registry.RoutePrefix()
-
 	//fmt.Printf("hostnames %d, %v\n", len(hostNames), hostNames)
 	for i, node := range hostNames {
 		key := registry.TenantNetPath(node)
