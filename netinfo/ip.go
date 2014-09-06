@@ -100,7 +100,7 @@ func GetAllSubnet(ipnet *net.IPNet, hostbits int) []net.IPNet {
 		ip := (((uint32(ipbuf[0]) | uint32(ip4[0])) << 24) |
 			((uint32(ipbuf[1]) | uint32(ip4[1])) << 16) |
 			((uint32(ipbuf[2]) | uint32(ip4[2])) << 8) |
-			uint32(ipbuf[3]) | uint32(ip4[3]))
+			uint32(ipbuf[3]) | uint32(ip4[3]+1))
 		binary.BigEndian.PutUint32(ipbuf, ip)
 
 		ipmask := net.CIDRMask(bits-hostbits, bits)
