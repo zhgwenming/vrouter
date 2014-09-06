@@ -15,15 +15,15 @@ var (
 	machines       string
 	hostNames      []string
 	globalSubnet   string
-	etcdServer     []string
 	registryClient *etcd.Client
+	etcdServers    *string
 )
 
 // create etcd client
 // register cobra subcommand
-func InitCmd(parent *cobra.Command, etcdClient *etcd.Client) {
+func InitCmd(parent *cobra.Command, servers *string) {
 
-	registryClient = etcdClient
+	etcdServers = servers
 
 	// register new subcommand
 	initCmd := &cobra.Command{
@@ -39,6 +39,9 @@ func InitCmd(parent *cobra.Command, etcdClient *etcd.Client) {
 }
 
 func registryInit(cmd *cobra.Command, args []string) {
+
+	servers := strings.Split(*etcdServers, ",")
+	registryClient := etcd.NewClient(servers)
 
 	if len(args) > 0 {
 		machines = args[0]
@@ -62,7 +65,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 
 	nets := netinfo.GetAllSubnet(ipnet, 8)
 
-	fmt.Printf("vrouter init %s, %v, etcd: %s\n", globalSubnet, ipnet, etcdServer)
+	fmt.Printf("vrouter init %s, %v\n", globalSubnet, ipnet)
 	//fmt.Printf("%v\n", nets)
 
 	//fmt.Printf("hostnames %d, %v\n", len(hostNames), hostNames)

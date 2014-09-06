@@ -2,25 +2,21 @@ package main
 
 import (
 	//"fmt"
-	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/zhgwenming/vrouter/controller"
 	"github.com/zhgwenming/vrouter/daemon"
 	"log"
-	"strings"
 )
 
 var (
-	etcdServer string
+	etcdServers string
 )
 
 func main() {
-	etcdstr := strings.Split(etcdServer, ",")
-	etcdClient := etcd.NewClient(etcdstr)
 
 	routerCmd := daemon.InitCmd()
-	routerCmd.PersistentFlags().StringVarP(&etcdServer, "etcd_server", "e", "http://127.0.0.1:4001", "etcd daemon addr")
+	routerCmd.PersistentFlags().StringVarP(&etcdServers, "etcd_servers", "e", "http://127.0.0.1:4001", "etcd server uri")
 
-	controller.InitCmd(routerCmd, etcdClient)
+	controller.InitCmd(routerCmd, &etcdServers)
 
 	if err := routerCmd.Execute(); err != nil {
 		log.Fatal(err)
