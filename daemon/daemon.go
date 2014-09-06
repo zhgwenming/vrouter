@@ -2,6 +2,8 @@ package daemon
 
 import (
 	"fmt"
+	"github.com/docker/docker/pkg/parsers/kernel"
+	"github.com/docker/libcontainer/netlink"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/zhgwenming/vrouter/netinfo"
@@ -74,6 +76,11 @@ func Run(c *cobra.Command, args []string) {
 			log.Fatal("Failed to bind router interface: ", err)
 		} else {
 			log.Printf("daemon: get ipnet %v\n", ipnet)
+		}
+
+		err = vrouter.createBridgeIface(bridge)
+		if err != nil {
+			log.Fatal(err)
 		}
 	} else {
 		c.Help()
@@ -192,6 +199,14 @@ func (d *Daemon) BindDockerNet(hostname, ip string) (*net.IPNet, error) {
 
 func BindDockerNet(hostname, ip string) (*net.IPNet, error) {
 	return vrouter.BindDockerNet(hostname, ip)
+}
+
+func (d *Daemon) createBridgeIface(name string) error {
+	kv, err := kernel.GetKernelVersion()
+	// only set the bridge's mac address if the kernel version is > 3.3
+	// before that it was not supported
+	setBridgeMacAddr := err == nil && (kv.Kernel >= 3 && kv.Major >= 3)
+	return netlink.CreateBridge(name, setBridgeMacAddr)
 }
 
 func WritePid(pidfile string) error {
