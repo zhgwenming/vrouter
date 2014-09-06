@@ -23,6 +23,7 @@ var (
 	gateway    bool
 	hostname   string
 	hostip     string
+	bridge     string
 )
 
 type Daemon struct {
@@ -56,6 +57,7 @@ func InitCmd(servers *string) *cobra.Command {
 	cmdflags.BoolVarP(&gateway, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
 	cmdflags.StringVarP(&hostname, "hostname", "n", "", "hostname to use in daemon mode")
 	cmdflags.StringVarP(&hostip, "hostip", "i", ipnet.String(), "use specified ip/mask instead auto detected ip address")
+	cmdflags.StringVarP(&bridge, "bridge", "b", "docker0", "bridge name to setup")
 
 	return routerCmd
 }
