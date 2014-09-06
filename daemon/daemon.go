@@ -49,7 +49,7 @@ func InitCmd() *cobra.Command {
 func Run(c *cobra.Command, args []string) {
 	if daemonMode {
 		vrouter.KeepAlive(hostname)
-		ipnet, err := BindIPNet(hostname, hostip)
+		ipnet, err := BindHostNet(hostname, hostip)
 		if err != nil {
 			log.Fatal("Failed to bind ipnet, not initialized? - ", err)
 		} else {
@@ -137,7 +137,7 @@ func (d *Daemon) updateHostIP(hostname, ip string) error {
 }
 
 // associate to nic ip address to an allocated IPNet
-func (d *Daemon) BindIPNet(hostname, ip string) (*net.IPNet, error) {
+func (d *Daemon) BindHostNet(hostname, ip string) (*net.IPNet, error) {
 	var err error
 	var ipnet *net.IPNet
 
@@ -162,8 +162,8 @@ func (d *Daemon) BindIPNet(hostname, ip string) (*net.IPNet, error) {
 	return ipnet, err
 }
 
-func BindIPNet(hostname string, ip net.IP) (*net.IPNet, error) {
-	return vrouter.BindIPNet(hostname, string(ip))
+func BindHostNet(hostname string, ip net.IP) (*net.IPNet, error) {
+	return vrouter.BindHostNet(hostname, string(ip))
 }
 
 func WritePid(pidfile string) error {
