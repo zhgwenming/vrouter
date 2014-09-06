@@ -105,7 +105,7 @@ func KeepAlive(hostname string) error {
 
 func (d *Daemon) getIPNet(hostname string) (*net.IPNet, error) {
 	client := d.etcdClient
-	key := registry.RoutePrefix() + "/" + hostname + "/" + "ipnet"
+	key := registry.TenantNetPath(hostname)
 
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (d *Daemon) getIPNet(hostname string) (*net.IPNet, error) {
 func (d *Daemon) updateHostIP(hostname, ip string) error {
 	client := d.etcdClient
 
-	key := registry.RoutePrefix() + "/" + hostname + "/" + "ipaddr"
+	key := registry.HostNetPath(hostname)
 	value := ip
 	ttl := uint64(0)
 

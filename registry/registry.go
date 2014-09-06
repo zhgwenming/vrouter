@@ -8,3 +8,11 @@ const (
 func RoutePrefix() string {
 	return REGISTRY_PREFIX + "/" + "route"
 }
+
+func TenantNetPath(node string) string {
+	return RoutePrefix() + "/" + node + "/" + "tenantnet"
+}
+
+func HostNetPath(node string) string {
+	return RoutePrefix() + "/" + node + "/" + "hostnet"
+}
