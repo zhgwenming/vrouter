@@ -38,10 +38,12 @@ func InitCmd() *cobra.Command {
 	}
 
 	// vrouter flags
-	routerCmd.Flags().BoolVarP(&daemonMode, "daemon", "d", false, "whether to run as daemon mode")
-	routerCmd.Flags().BoolVarP(&gateway, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
-	routerCmd.Flags().StringVarP(&hostname, "hostname", "n", "", "hostname to use in daemon mode")
-	routerCmd.Flags().IPVarP(&hostip, "hostip", "i", []byte{}, "use specified ip instead auto detected ip address")
+	cmdflags := routerCmd.Flags()
+
+	cmdflags.BoolVarP(&daemonMode, "daemon", "d", false, "whether to run as daemon mode")
+	cmdflags.BoolVarP(&gateway, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
+	cmdflags.StringVarP(&hostname, "hostname", "n", "", "hostname to use in daemon mode")
+	cmdflags.IPVarP(&hostip, "hostip", "i", []byte{}, "use specified ip instead auto detected ip address")
 
 	return routerCmd
 }
