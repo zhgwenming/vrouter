@@ -78,7 +78,7 @@ func Run(c *cobra.Command, args []string) {
 			log.Printf("daemon: get ipnet %v\n", ipnet)
 		}
 
-		err = vrouter.createBridgeIface(bridge)
+		err = vrouter.createBridgeIface(bridge, ipnet.String())
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -201,12 +201,34 @@ func BindDockerNet(hostname, ip string) (*net.IPNet, error) {
 	return vrouter.BindDockerNet(hostname, ip)
 }
 
-func (d *Daemon) createBridgeIface(name string) error {
+func (d *Daemon) createBridgeIface(bridgeIface, ifaceAddr string) error {
 	kv, err := kernel.GetKernelVersion()
 	// only set the bridge's mac address if the kernel version is > 3.3
 	// before that it was not supported
 	setBridgeMacAddr := err == nil && (kv.Kernel >= 3 && kv.Major >= 3)
-	return netlink.CreateBridge(name, setBridgeMacAddr)
+	err = netlink.CreateBridge(bridgeIface, setBridgeMacAddr)
+	if err != nil {
+		return err
+	}
+
+	iface, err := net.InterfaceByName(bridgeIface)
+	if err != nil {
+		return err
+	}
+
+	ipAddr, ipNet, err := net.ParseCIDR(ifaceAddr)
+	if err != nil {
+		return err
+	}
+
+	if netlink.NetworkLinkAddIp(iface, ipAddr, ipNet); err != nil {
+		return fmt.Errorf("Unable to add private network: %s", err)
+	}
+	if err := netlink.NetworkLinkUp(iface); err != nil {
+		return fmt.Errorf("Unable to start network bridge: %s", err)
+	}
+
+	return nil
 }
 
 func WritePid(pidfile string) error {
