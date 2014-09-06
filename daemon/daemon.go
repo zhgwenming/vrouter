@@ -121,9 +121,9 @@ func KeepAlive(hostname string) error {
 	return vrouter.KeepAlive(hostname)
 }
 
-func (d *Daemon) getIPNet(hostname string) (*net.IPNet, error) {
+func (d *Daemon) getHostIPNet(hostname string) (*net.IPNet, error) {
 	client := d.etcdClient
-	key := registry.TenantNetPath(hostname)
+	key := registry.HostNetPath(hostname)
 
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
@@ -138,10 +138,10 @@ func (d *Daemon) getIPNet(hostname string) (*net.IPNet, error) {
 	}
 }
 
-func (d *Daemon) updateHostIP(hostname, ip string) error {
+func (d *Daemon) updateTenantNetIP(hostname, ip string) error {
 	client := d.etcdClient
 
-	key := registry.HostNetPath(hostname)
+	key := registry.TenantNetPath(hostname)
 	value := ip
 	ttl := uint64(0)
 
@@ -171,11 +171,11 @@ func (d *Daemon) BindHostNet(hostname, ip string) (*net.IPNet, error) {
 	}
 
 	// get node IPNet info first
-	if hostnet, err = d.getIPNet(hostname); err != nil {
+	if hostnet, err = d.getHostIPNet(hostname); err != nil {
 		return hostnet, err
 	}
 
-	err = d.updateHostIP(hostname, ip)
+	err = d.updateTenantNetIP(hostname, ip)
 
 	return hostnet, err
 }
