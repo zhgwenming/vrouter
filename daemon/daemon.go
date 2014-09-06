@@ -19,7 +19,7 @@ var (
 	daemonMode bool
 	gateway    bool
 	hostname   string
-	hostip     net.IP
+	hostip     string
 )
 
 type Daemon struct {
@@ -37,13 +37,19 @@ func InitCmd() *cobra.Command {
 		Run:  Run,
 	}
 
+	var ipnet *net.IPNet
+	ipnetlist := netinfo.ListIPNet(true)
+	if len(ipnetlist) > 0 {
+		ipnet = ipnetlist[0]
+	}
+
 	// vrouter flags
 	cmdflags := routerCmd.Flags()
 
 	cmdflags.BoolVarP(&daemonMode, "daemon", "d", false, "whether to run as daemon mode")
 	cmdflags.BoolVarP(&gateway, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
 	cmdflags.StringVarP(&hostname, "hostname", "n", "", "hostname to use in daemon mode")
-	cmdflags.IPVarP(&hostip, "hostip", "i", []byte{}, "use specified ip instead auto detected ip address")
+	cmdflags.StringVarP(&hostip, "hostip", "i", ipnet.String(), "use specified ip/mask instead auto detected ip address")
 
 	return routerCmd
 }
@@ -141,12 +147,12 @@ func (d *Daemon) updateHostIP(hostname, ip string) error {
 // associate to nic ip address to an allocated IPNet
 func (d *Daemon) BindHostNet(hostname, ip string) (*net.IPNet, error) {
 	var err error
-	var ipnet *net.IPNet
+	var hostnet *net.IPNet
 
 	if hostname == "" {
 		hostname, err = os.Hostname()
 		if err != nil {
-			return ipnet, err
+			return hostnet, err
 		}
 	}
 
@@ -155,17 +161,17 @@ func (d *Daemon) BindHostNet(hostname, ip string) (*net.IPNet, error) {
 	}
 
 	// get node IPNet info first
-	if ipnet, err = d.getIPNet(hostname); err != nil {
-		return ipnet, err
+	if hostnet, err = d.getIPNet(hostname); err != nil {
+		return hostnet, err
 	}
 
 	err = d.updateHostIP(hostname, ip)
 
-	return ipnet, err
+	return hostnet, err
 }
 
-func BindHostNet(hostname string, ip net.IP) (*net.IPNet, error) {
-	return vrouter.BindHostNet(hostname, string(ip))
+func BindHostNet(hostname, ip string) (*net.IPNet, error) {
+	return vrouter.BindHostNet(hostname, ip)
 }
 
 func WritePid(pidfile string) error {

@@ -67,7 +67,7 @@ iface:
 				//log.Printf("%v", ip4)
 
 				if !ip4.IsLoopback() {
-					addr = ip4.String()
+					addr = ipnet.String()
 					break iface
 				}
 			}
