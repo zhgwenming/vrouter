@@ -5,14 +5,14 @@ const (
 	REGISTRY_PREFIX = "_vrouter"
 )
 
-func RoutePrefix() string {
+func VRouterPrefix() string {
 	return REGISTRY_PREFIX + "/" + "route"
 }
 
-func TenantNetPath(node string) string {
-	return RoutePrefix() + "/" + node + "/" + "tenantnet"
+func RouterInterfacePath(node string) string {
+	return VRouterPrefix() + "/" + node + "/" + "routerif"
 }
 
-func HostNetPath(node string) string {
-	return RoutePrefix() + "/" + node + "/" + "hostnet"
+func DockerBridgePath(node string) string {
+	return VRouterPrefix() + "/" + node + "/" + "dockerbr"
 }

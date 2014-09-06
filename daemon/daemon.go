@@ -121,9 +121,9 @@ func KeepAlive(hostname string) error {
 	return vrouter.KeepAlive(hostname)
 }
 
-func (d *Daemon) getHostIPNet(hostname string) (*net.IPNet, error) {
+func (d *Daemon) getDockerIPNet(hostname string) (*net.IPNet, error) {
 	client := d.etcdClient
-	key := registry.HostNetPath(hostname)
+	key := registry.DockerBridgePath(hostname)
 
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func (d *Daemon) getHostIPNet(hostname string) (*net.IPNet, error) {
 func (d *Daemon) updateTenantNetIP(hostname, ip string) error {
 	client := d.etcdClient
 
-	key := registry.TenantNetPath(hostname)
+	key := registry.RouterInterfacePath(hostname)
 	value := ip
 	ttl := uint64(0)
 
@@ -171,7 +171,7 @@ func (d *Daemon) BindHostNet(hostname, ip string) (*net.IPNet, error) {
 	}
 
 	// get node IPNet info first
-	if hostnet, err = d.getHostIPNet(hostname); err != nil {
+	if hostnet, err = d.getDockerIPNet(hostname); err != nil {
 		return hostnet, err
 	}
 
