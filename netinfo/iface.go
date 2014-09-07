@@ -4,7 +4,7 @@ import (
 	"net"
 )
 
-func InterfaceByIP(ip string) *net.Interface {
+func InterfaceByIPNet(ip string) *net.Interface {
 	ifaces, _ := net.Interfaces()
 	for _, i := range ifaces {
 		if addrs, err := i.Addrs(); err != nil {
@@ -17,7 +17,7 @@ func InterfaceByIP(ip string) *net.Interface {
 					continue
 				}
 
-				if ip == string(ipnet.IP) {
+				if ip == ipnet.String() {
 					return &i
 				}
 			}

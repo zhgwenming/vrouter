@@ -18,10 +18,11 @@ import (
 type Daemon struct {
 	etcdClient *etcd.Client
 	hostip     string
+	iface      *net.Interface
 }
 
-func NewDaemon(etcdClient *etcd.Client, ip string) *Daemon {
-	return &Daemon{etcdClient: etcdClient, hostip: ip}
+func NewDaemon(etcdClient *etcd.Client, ip string, iface *net.Interface) *Daemon {
+	return &Daemon{etcdClient: etcdClient, hostip: ip, iface: iface}
 }
 
 func (d *Daemon) ManageRoute() error {

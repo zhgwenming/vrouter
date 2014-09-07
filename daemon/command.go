@@ -57,7 +57,9 @@ func (cmd *Command) Run(c *cobra.Command, args []string) {
 	if cmd.daemonMode {
 		servers := strings.Split(*cmd.etcdServers, ",")
 		etcdClient := etcd.NewClient(servers)
-		vrouter := NewDaemon(etcdClient, cmd.hostip)
+		iface := netinfo.InterfaceByIPNet(cmd.hostip)
+
+		vrouter := NewDaemon(etcdClient, cmd.hostip, iface)
 
 		vrouter.KeepAlive(cmd.hostname)
 		dockerNet, err := vrouter.BindDockerNet(cmd.hostname, cmd.hostip)
