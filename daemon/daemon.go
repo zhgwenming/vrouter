@@ -52,7 +52,7 @@ func (d *Daemon) listRoute() ([]Route, uint64, error) {
 			if routerIface != "" && routerIface != d.hostip {
 				dockerIfacePath := hostKey + "/" + "dockerbr"
 				dockerIface := routerNet[dockerIfacePath]
-				r := Route{routerIface: routerIface, dockerIface: dockerIface}
+				r := Route{routerIfaceAddr: routerIface, bridgeIfaceAddr: dockerIface}
 				routes = append(routes, r)
 			}
 		}
@@ -62,10 +62,16 @@ func (d *Daemon) listRoute() ([]Route, uint64, error) {
 }
 
 func (d *Daemon) ManageRoute() error {
-	route, index, err := d.listRoute()
+	routes, index, err := d.listRoute()
 	if err != nil {
 		return err
 	}
+
+	for r := range routes {
+		r.AddRoute()
+	}
+
+	return nil
 }
 
 func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
