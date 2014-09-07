@@ -30,7 +30,7 @@ func (cmd *Command) InitCmd(servers *string) *cobra.Command {
 	routerCmd := &cobra.Command{
 		Use:  "vrouter",
 		Long: "vrouter is a tool for routing distributed Docker containers.\n\n",
-		Run:  Run,
+		Run:  cmd.Run,
 	}
 
 	var ipnet *net.IPNet
@@ -42,11 +42,11 @@ func (cmd *Command) InitCmd(servers *string) *cobra.Command {
 	// vrouter flags
 	cmdflags := routerCmd.Flags()
 
-	hostname, _ = os.Hostname()
+	cmd.hostname, _ = os.Hostname()
 
 	cmdflags.BoolVarP(&cmd.daemonMode, "daemon", "d", false, "whether to run as daemon mode")
 	cmdflags.BoolVarP(&cmd.gatewayMode, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
-	cmdflags.StringVarP(&cmd.hostname, "hostname", "n", hostname, "hostname to use in daemon mode")
+	cmdflags.StringVarP(&cmd.hostname, "hostname", "n", cmd.hostname, "hostname to use in daemon mode")
 	cmdflags.StringVarP(&cmd.hostip, "hostip", "i", ipnet.String(), "use specified ip/mask instead auto detected ip address")
 	cmdflags.StringVarP(&cmd.bridgeName, "bridge", "b", "docker0", "bridge name to setup")
 
@@ -54,20 +54,20 @@ func (cmd *Command) InitCmd(servers *string) *cobra.Command {
 }
 
 func (cmd *Command) Run(c *cobra.Command, args []string) {
-	if daemonMode {
+	if cmd.daemonMode {
 		servers := strings.Split(*cmd.etcdServers, ",")
 		etcdClient := etcd.NewClient(servers)
-		vrouter = NewDaemon(etcdClient)
+		vrouter := NewDaemon(etcdClient, cmd.hostip)
 
-		vrouter.KeepAlive(hostname)
-		dockerNet, err := BindDockerNet(hostname, hostip)
+		vrouter.KeepAlive(cmd.hostname)
+		dockerNet, err := vrouter.BindDockerNet(cmd.hostname, cmd.hostip)
 		if err != nil {
 			log.Fatal("Failed to bind router interface: ", err)
 		} else {
 			log.Printf("daemon: get ipnet %v\n", dockerNet)
 		}
 
-		err = vrouter.createBridgeIface(bridge, dockerNet.String())
+		err = vrouter.createBridgeIface(cmd.bridgeName, dockerNet.String())
 		if err != nil {
 			log.Fatal(err)
 		}
