@@ -17,22 +17,26 @@ import (
 
 type Daemon struct {
 	etcdClient *etcd.Client
-	hostip     string
 	iface      *net.Interface
+	hostip     string
 }
 
 func NewDaemon(etcdClient *etcd.Client, ip string, iface *net.Interface) *Daemon {
 	return &Daemon{etcdClient: etcdClient, hostip: ip, iface: iface}
 }
 
-func (d *Daemon) ManageRoute() error {
+func (d *Daemon) listRoute() ([]Route, uint64, error) {
+	var index uint64
+	var err error
+
 	routes := make([]Route, 0, 256)
 	client := d.etcdClient
 
 	routerPath := registry.VRouterPrefix()
 	if resp, err := client.Get(routerPath, false, true); err != nil {
-		return err
+		return routes, index, err
 	} else {
+		index = resp.EtcdIndex
 		hosts := resp.Node.Nodes
 		for _, host := range hosts {
 			hostKey := host.Key
@@ -54,7 +58,14 @@ func (d *Daemon) ManageRoute() error {
 		}
 	}
 
-	return nil
+	return routes, index, err
+}
+
+func (d *Daemon) ManageRoute() error {
+	route, index, err := d.listRoute()
+	if err != nil {
+		return err
+	}
 }
 
 func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
