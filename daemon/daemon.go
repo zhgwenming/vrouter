@@ -74,6 +74,15 @@ func (d *Daemon) ManageRoute() error {
 		}
 	}
 
+	receiver := make(chan *etcd.Response, 4)
+	stop := make(chan bool)
+	client := d.etcdClient
+	client.Watch(registry.VRouterPrefix(), etcdindex, true, receiver, stop)
+
+	for resp := range receiver {
+		log.Printf("%v", resp)
+	}
+
 	return nil
 }
 
