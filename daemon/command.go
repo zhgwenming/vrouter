@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -69,9 +70,12 @@ func (cmd *Command) Run(c *cobra.Command, args []string) {
 			log.Printf("daemon: get ipnet %v\n", dockerNet)
 		}
 
-		err = vrouter.createBridgeIface(cmd.bridgeName, dockerNet.String())
-		if err != nil {
-			log.Fatal(err)
+		// debug on Mac OS X
+		if runtime.GOOS == "linux" {
+			err = vrouter.createBridgeIface(cmd.bridgeName, dockerNet.String())
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		err = vrouter.ManageRoute()
