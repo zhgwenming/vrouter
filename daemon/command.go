@@ -60,10 +60,10 @@ func (cmd *Command) Run(c *cobra.Command, args []string) {
 		etcdClient := etcd.NewClient(servers)
 		iface := netinfo.InterfaceByIPNet(cmd.hostip)
 
-		vrouter := NewDaemon(etcdClient, cmd.hostip, iface)
+		vrouter := NewDaemon(etcdClient, cmd.hostname, cmd.hostip, iface)
 
-		vrouter.KeepAlive(cmd.hostname)
-		dockerNet, err := vrouter.BindDockerNet(cmd.hostname, cmd.hostip)
+		vrouter.KeepAlive()
+		dockerNet, err := vrouter.BindDockerNet(cmd.hostip)
 		if err != nil {
 			log.Fatal("Failed to bind router interface: ", err)
 		} else {

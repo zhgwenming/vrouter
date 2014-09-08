@@ -6,22 +6,14 @@ import (
 )
 
 type Route struct {
-	bridgeIfaceAddr string
-	routerIfaceAddr string
+	target string
+	gw     string
+}
+
+func NewRoute(target, gw string) *Route {
+	return &Route{target: target, gw: gw}
 }
 
 func (r *Route) AddRoute(iface *net.Interface) error {
-	_, dnet, err := net.ParseCIDR(r.bridgeIfaceAddr)
-	if err != nil {
-		return err
-	}
-
-	ip, _, err := net.ParseCIDR(r.routerIfaceAddr)
-	if err != nil {
-		return err
-	}
-
-	err = netlink.AddRoute(dnet.String(), "", ip.String(), iface.Name)
-
-	return err
+	return netlink.AddRoute(r.target, "", r.gw, iface.Name)
 }

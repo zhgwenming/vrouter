@@ -16,13 +16,15 @@ import (
 )
 
 type Daemon struct {
-	etcdClient *etcd.Client
-	iface      *net.Interface
+	hostname   string
 	hostip     string
+	dockernet  *net.IPNet
+	iface      *net.Interface
+	etcdClient *etcd.Client
 }
 
-func NewDaemon(etcdClient *etcd.Client, ip string, iface *net.Interface) *Daemon {
-	return &Daemon{etcdClient: etcdClient, hostip: ip, iface: iface}
+func NewDaemon(etcdClient *etcd.Client, hostname, ip string, iface *net.Interface) *Daemon {
+	return &Daemon{etcdClient: etcdClient, hostname: hostname, hostip: ip, iface: iface}
 }
 
 func (d *Daemon) listRoute() ([]Route, uint64, error) {
@@ -111,25 +113,25 @@ func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
 	}
 }
 
-func (d *Daemon) KeepAlive(hostname string) error {
+func (d *Daemon) KeepAlive() error {
 	var err error
 	keyPrefix := registry.REGISTRY_PREFIX + "/" + "host"
-	if len(hostname) == 0 {
-		hostname, err = os.Hostname()
+	if len(d.hostname) == 0 {
+		d.hostname, err = os.Hostname()
 		if err != nil {
 			return err
 		}
 	}
 
-	key := keyPrefix + "/" + hostname
+	key := keyPrefix + "/" + d.hostname
 	value := "alive"
 	ttl := uint64(5)
 	return d.doKeepAlive(key, value, ttl)
 }
 
-func (d *Daemon) getDockerIPNet(hostname string) (*net.IPNet, error) {
+func (d *Daemon) getDockerIPNet() (*net.IPNet, error) {
 	client := d.etcdClient
-	key := registry.DockerBridgePath(hostname)
+	key := registry.DockerBridgePath(d.hostname)
 
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
@@ -145,16 +147,16 @@ func (d *Daemon) getDockerIPNet(hostname string) (*net.IPNet, error) {
 	}
 }
 
-func (d *Daemon) updateRouterInterfaceNetIP(hostname, ip string) error {
+func (d *Daemon) updateRouterInterfaceNetIP(ip string) error {
 	client := d.etcdClient
 
-	key := registry.RouterInterfacePath(hostname)
+	key := registry.RouterInterfacePath(d.hostname)
 	value := ip
 	ttl := uint64(0)
 
 	if resp, err := client.Get(key, false, false); err == nil {
 		if r := resp.Node.Value; r == value {
-			log.Printf("found exist routerif for node: %s", hostname)
+			log.Printf("found exist routerif for node: %s", d.hostname)
 			return nil
 		}
 	}
@@ -168,13 +170,26 @@ func (d *Daemon) updateRouterInterfaceNetIP(hostname, ip string) error {
 	return nil
 }
 
+func (d *Daemon) updateNodeRoute(ip string) error {
+	dnet := d.dockernet.String()
+	ip := d.hostip
+	r := NewRoute(dnet, ip)
+
+	client := d.etcdClient
+	if _, err := client.Create(key, value, ttl); err != nil {
+		log.Printf("Error to create node: %s", err)
+		return err
+	}
+	return nil
+}
+
 // associate to nic ip address to an allocated IPNet
-func (d *Daemon) BindDockerNet(hostname, ip string) (*net.IPNet, error) {
+func (d *Daemon) BindDockerNet(ip string) (*net.IPNet, error) {
 	var err error
 	var hostnet *net.IPNet
 
-	if hostname == "" {
-		hostname, err = os.Hostname()
+	if d.hostname == "" {
+		d.hostname, err = os.Hostname()
 		if err != nil {
 			return hostnet, err
 		}
@@ -185,11 +200,12 @@ func (d *Daemon) BindDockerNet(hostname, ip string) (*net.IPNet, error) {
 	}
 
 	// get node IPNet info first
-	if hostnet, err = d.getDockerIPNet(hostname); err != nil {
+	if hostnet, err = d.getDockerIPNet(); err != nil {
 		return hostnet, err
 	}
+	d.dockernet = hostnet
 
-	err = d.updateRouterInterfaceNetIP(hostname, ip)
+	err = d.updateRouterInterfaceNetIP(ip)
 
 	return hostnet, err
 }
