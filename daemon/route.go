@@ -10,13 +10,18 @@ type Route struct {
 	routerIfaceAddr string
 }
 
-func (r *Route) AddRoute() error {
+func (r *Route) AddRoute(iface *net.Interface) error {
 	_, dnet, err := net.ParseCIDR(r.bridgeIfaceAddr)
 	if err != nil {
 		return err
 	}
 
-	ip, ipnet, err := net.ParseCIDR(r.routerIfaceAddr)
+	ip, _, err := net.ParseCIDR(r.routerIfaceAddr)
+	if err != nil {
+		return err
+	}
 
-	return nil
+	err = netlink.AddRoute(dnet.String(), "", ip.String(), iface.Name)
+
+	return err
 }

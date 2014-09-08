@@ -62,13 +62,16 @@ func (d *Daemon) listRoute() ([]Route, uint64, error) {
 }
 
 func (d *Daemon) ManageRoute() error {
-	routes, index, err := d.listRoute()
+	routes, etcdindex, err := d.listRoute()
 	if err != nil {
 		return err
 	}
 
-	for r := range routes {
-		r.AddRoute()
+	for _, r := range routes {
+		err = r.AddRoute(d.iface)
+		if err != nil {
+			log.Printf("error to add route: %s", err)
+		}
 	}
 
 	return nil
