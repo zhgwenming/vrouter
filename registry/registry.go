@@ -16,3 +16,7 @@ func RouterInterfacePath(node string) string {
 func DockerBridgePath(node string) string {
 	return VRouterPrefix() + "/" + node + "/" + "dockerbr"
 }
+
+func NodeRoutePath(node string) string {
+	return VRouterPrefix() + "/" + node + "/" + "route"
+}
