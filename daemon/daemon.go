@@ -17,15 +17,27 @@ import (
 )
 
 type Daemon struct {
-	hostname    string
-	hostip      string
+	etcdClient *etcd.Client
+
+	// host relate information
+	Hostname string
+
+	// bridge information
+	bridgeName  string
 	bridgeIPNet *net.IPNet
-	iface       *net.Interface
-	etcdClient  *etcd.Client
+
+	// interface information
+	iface *net.Interface
+	//ifaceIPNet *net.IPNet
+	hostip string
 }
 
-func NewDaemon(etcdClient *etcd.Client, hostname, ip string, iface *net.Interface) *Daemon {
-	return &Daemon{etcdClient: etcdClient, hostname: hostname, hostip: ip, iface: iface}
+//func NewDaemon(etcdClient *etcd.Client, hostname, ip string, iface *net.Interface) *Daemon {
+//	return &Daemon{etcdClient: etcdClient, hostname: hostname, hostip: ip, iface: iface}
+//}
+
+func NewDaemon() *Daemon {
+	return &Daemon{}
 }
 
 func (d *Daemon) listRoute() ([]*Route, uint64, error) {
@@ -42,7 +54,7 @@ func (d *Daemon) listRoute() ([]*Route, uint64, error) {
 		index = resp.EtcdIndex
 		hosts := resp.Node.Nodes
 		for _, host := range hosts {
-			if hostKey := host.Key; strings.HasSuffix(hostKey, d.hostname) {
+			if hostKey := host.Key; strings.HasSuffix(hostKey, d.Hostname) {
 				continue
 			}
 			value := host.Value
@@ -106,14 +118,14 @@ func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
 
 func (d *Daemon) KeepAlive() error {
 	var err error
-	if len(d.hostname) == 0 {
-		d.hostname, err = os.Hostname()
+	if len(d.Hostname) == 0 {
+		d.Hostname, err = os.Hostname()
 		if err != nil {
 			return err
 		}
 	}
 
-	key := registry.NodeActivePath(d.hostname)
+	key := registry.NodeActivePath(d.Hostname)
 	value := "alive"
 	ttl := uint64(5)
 	return d.doKeepAlive(key, value, ttl)
@@ -122,7 +134,7 @@ func (d *Daemon) KeepAlive() error {
 // return ip, ipnet, err
 func (d *Daemon) getBridgeIPNet() (*net.IPNet, error) {
 	client := d.etcdClient
-	key := registry.BridgeInfoPath(d.hostname)
+	key := registry.BridgeInfoPath(d.Hostname)
 
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
@@ -141,13 +153,13 @@ func (d *Daemon) getBridgeIPNet() (*net.IPNet, error) {
 func (d *Daemon) updateRouterInterfaceNetIP(ip string) error {
 	client := d.etcdClient
 
-	key := registry.IfaceInfoPath(d.hostname)
+	key := registry.IfaceInfoPath(d.Hostname)
 	value := ip
 	ttl := uint64(0)
 
 	if resp, err := client.Get(key, false, false); err == nil {
 		if r := resp.Node.Value; r == value {
-			log.Printf("found exist brideginfo for node: %s", d.hostname)
+			log.Printf("found exist brideginfo for node: %s", d.Hostname)
 			return nil
 		}
 	}
@@ -167,7 +179,7 @@ func (d *Daemon) updateNodeRoute() error {
 	r := NewRoute(dnet, ip)
 
 	client := d.etcdClient
-	key := registry.NodeRoutePath(d.hostname)
+	key := registry.NodeRoutePath(d.Hostname)
 	value := r.String()
 	ttl := uint64(0)
 
@@ -183,8 +195,8 @@ func (d *Daemon) BindDockerNet(ip string) (*net.IPNet, error) {
 	var err error
 	var brnet *net.IPNet
 
-	if d.hostname == "" {
-		d.hostname, err = os.Hostname()
+	if d.Hostname == "" {
+		d.Hostname, err = os.Hostname()
 		if err != nil {
 			return brnet, err
 		}
@@ -208,17 +220,17 @@ func (d *Daemon) BindDockerNet(ip string) (*net.IPNet, error) {
 	return brnet, err
 }
 
-func (d *Daemon) createBridgeIface(bridgeIface, ifaceAddr string) error {
+func (d *Daemon) createBridgeIface(ifaceAddr string) error {
 	kv, err := kernel.GetKernelVersion()
 	// only set the bridge's mac address if the kernel version is > 3.3
 	// before that it was not supported
 	setBridgeMacAddr := err == nil && (kv.Kernel >= 3 && kv.Major >= 3)
-	err = netlink.CreateBridge(bridgeIface, setBridgeMacAddr)
+	err = netlink.CreateBridge(d.bridgeName, setBridgeMacAddr)
 	if err != nil {
 		return err
 	}
 
-	iface, err := net.InterfaceByName(bridgeIface)
+	iface, err := net.InterfaceByName(d.bridgeName)
 	if err != nil {
 		return err
 	}
