@@ -53,11 +53,13 @@ func (d *Daemon) listRoute() ([]*Route, uint64, error) {
 				continue
 			}
 			value := host.Value
-			r := ParseRoute(value)
-			routes = append(routes, r)
+			if r := ParseRoute(value); r != nil {
+				routes = append(routes, r)
+			}
 		}
 	}
 
+	log.Printf("Routes is %v", routes)
 	return routes, index, err
 }
 

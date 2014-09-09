@@ -17,7 +17,7 @@ func NewRoute(target, gw string) *Route {
 
 func ParseRoute(str string) *Route {
 	r := strings.Split(str, ":")
-	if len(r) == 2 {
+	if len(r) != 2 {
 		return nil
 	}
 	return &Route{target: r[0], gw: r[1]}
