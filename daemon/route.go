@@ -3,6 +3,7 @@ package daemon
 import (
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
 	"net"
+	"strings"
 )
 
 type Route struct {
@@ -15,7 +16,11 @@ func NewRoute(target, gw string) *Route {
 }
 
 func ParseRoute(str string) *Route {
-	return &Route{}
+	r := strings.Split(str, ":")
+	if len(r) == 2 {
+		return nil
+	}
+	return &Route{target: r[0], gw: r[1]}
 }
 
 func (r *Route) AddRoute(iface *net.Interface) error {

@@ -82,7 +82,16 @@ func (d *Daemon) ManageRoute() error {
 	//log.Printf("Watching or %s", registry.RouterHostsPrefix())
 
 	for resp := range receiver {
-		log.Printf("%v", resp.Node.Key)
+		host := resp.Node
+		log.Printf("%v", host.Key)
+		//if hostKey := host.Key; strings.HasSuffix(hostKey, d.Hostname) {
+		//	continue
+		//}
+		value := host.Value
+		r := ParseRoute(value)
+		if err := r.AddRoute(d.iface); err != nil {
+			log.Printf("AddRoute error(%v): %s", r, err)
+		}
 	}
 
 	return nil
