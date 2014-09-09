@@ -11,6 +11,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -27,36 +28,26 @@ func NewDaemon(etcdClient *etcd.Client, hostname, ip string, iface *net.Interfac
 	return &Daemon{etcdClient: etcdClient, hostname: hostname, hostip: ip, iface: iface}
 }
 
-func (d *Daemon) listRoute() ([]Route, uint64, error) {
+func (d *Daemon) listRoute() ([]*Route, uint64, error) {
 	var index uint64
 	var err error
 
-	routes := make([]Route, 0, 256)
+	routes := make([]*Route, 0, 256)
 	client := d.etcdClient
 
-	routerPath := registry.VRouterPrefix()
+	routerPath := registry.RouterRoutesPrefix()
 	if resp, err := client.Get(routerPath, false, true); err != nil {
 		return routes, index, err
 	} else {
 		index = resp.EtcdIndex
 		hosts := resp.Node.Nodes
 		for _, host := range hosts {
-			hostKey := host.Key
-
-			// extract the host routerif/dockerbr info first
-			routerNet := make(map[string]string, 2)
-			for _, ipnet := range host.Nodes {
-				routerNet[ipnet.Key] = ipnet.Value
+			if hostKey := host.Key; strings.HasSuffix(hostKey, d.hostname) {
+				continue
 			}
-
-			routerIfacePath := hostKey + "/" + "routerif"
-			routerIface := routerNet[routerIfacePath]
-			if routerIface != "" && routerIface != d.hostip {
-				dockerIfacePath := hostKey + "/" + "dockerbr"
-				dockerIface := routerNet[dockerIfacePath]
-				r := Route{routerIfaceAddr: routerIface, bridgeIfaceAddr: dockerIface}
-				routes = append(routes, r)
-			}
+			value := host.Value
+			r := ParseRoute(value)
+			routes = append(routes, r)
 		}
 	}
 
@@ -79,9 +70,9 @@ func (d *Daemon) ManageRoute() error {
 	receiver := make(chan *etcd.Response, 4)
 	client := d.etcdClient
 
-	go client.Watch(registry.VRouterPrefix(), etcdindex, true, receiver, nil)
+	go client.Watch(registry.RouterRoutesPrefix(), etcdindex, true, receiver, nil)
 
-	//log.Printf("Watching or %s", registry.VRouterPrefix())
+	//log.Printf("Watching or %s", registry.RouterHostsPrefix())
 
 	for resp := range receiver {
 		log.Printf("%v", resp.Node.Key)
@@ -131,7 +122,7 @@ func (d *Daemon) KeepAlive() error {
 
 func (d *Daemon) getDockerIPNet() (*net.IPNet, error) {
 	client := d.etcdClient
-	key := registry.DockerBridgePath(d.hostname)
+	key := registry.BridgeInfoPath(d.hostname)
 
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
@@ -150,13 +141,13 @@ func (d *Daemon) getDockerIPNet() (*net.IPNet, error) {
 func (d *Daemon) updateRouterInterfaceNetIP(ip string) error {
 	client := d.etcdClient
 
-	key := registry.RouterInterfacePath(d.hostname)
+	key := registry.IfaceInfoPath(d.hostname)
 	value := ip
 	ttl := uint64(0)
 
 	if resp, err := client.Get(key, false, false); err == nil {
 		if r := resp.Node.Value; r == value {
-			log.Printf("found exist routerif for node: %s", d.hostname)
+			log.Printf("found exist brideginfo for node: %s", d.hostname)
 			return nil
 		}
 	}
@@ -170,13 +161,16 @@ func (d *Daemon) updateRouterInterfaceNetIP(ip string) error {
 	return nil
 }
 
-func (d *Daemon) updateNodeRoute(ip string) error {
+func (d *Daemon) updateNodeRoute() error {
 	dnet := d.dockernet.String()
 	ip := d.hostip
 	r := NewRoute(dnet, ip)
 
 	client := d.etcdClient
 	key := registry.NodeRoutePath(d.hostname)
+	value := r.String()
+	ttl := uint64(0)
+
 	if _, err := client.Create(key, value, ttl); err != nil {
 		log.Printf("Error to create node: %s", err)
 		return err
