@@ -32,10 +32,6 @@ type Daemon struct {
 	hostip string
 }
 
-//func NewDaemon(etcdClient *etcd.Client, hostname, ip string, iface *net.Interface) *Daemon {
-//	return &Daemon{etcdClient: etcdClient, hostname: hostname, hostip: ip, iface: iface}
-//}
-
 func NewDaemon() *Daemon {
 	return &Daemon{}
 }
@@ -191,7 +187,7 @@ func (d *Daemon) updateNodeRoute() error {
 }
 
 // associate to nic ip address to an allocated IPNet
-func (d *Daemon) BindDockerNet(ip string) (*net.IPNet, error) {
+func (d *Daemon) BindBridgeIPNet(ifaceip string) (*net.IPNet, error) {
 	var err error
 	var brnet *net.IPNet
 
@@ -202,8 +198,8 @@ func (d *Daemon) BindDockerNet(ip string) (*net.IPNet, error) {
 		}
 	}
 
-	if ip == "" {
-		ip = netinfo.GetFirstIPAddr()
+	if ifaceip == "" {
+		ifaceip = netinfo.GetFirstIPAddr()
 	}
 
 	// get node IPNet info first
@@ -212,7 +208,9 @@ func (d *Daemon) BindDockerNet(ip string) (*net.IPNet, error) {
 	}
 	d.bridgeIPNet = brnet
 
-	if err = d.updateRouterInterfaceNetIP(ip); err != nil {
+	d.iface = netinfo.InterfaceByIPNet(ifaceip)
+
+	if err = d.updateRouterInterfaceNetIP(ifaceip); err != nil {
 		return brnet, err
 	}
 	err = d.updateNodeRoute()

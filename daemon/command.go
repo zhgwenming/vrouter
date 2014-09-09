@@ -69,28 +69,29 @@ func (cmd *Command) Run(c *cobra.Command, args []string) {
 		servers := strings.Split(*cmd.etcdServers, ",")
 		vrouter := cmd.daemon
 
+		// start keepalive first
 		vrouter.etcdClient = etcd.NewClient(servers)
-
-		vrouter.iface = netinfo.InterfaceByIPNet(cmd.hostip)
-
-		//vrouter := NewDaemon(etcdClient, cmd.hostname, cmd.hostip, iface)
-
 		vrouter.KeepAlive()
-		dockerNet, err := vrouter.BindDockerNet(cmd.hostip)
+
+		// bind and get a bridge IPNet with our iface ip
+		// create the routing table entry in registry
+		bridgeIPNet, err := vrouter.BindBridgeIPNet(cmd.hostip)
 		if err != nil {
 			log.Fatal("Failed to bind router interface: ", err)
 		} else {
-			log.Printf("daemon: get ipnet %v\n", dockerNet)
+			log.Printf("daemon: get ipnet %v\n", bridgeIPNet)
 		}
 
-		// debug on Mac OS X
+		// create bridge if we're running under linux
+		// to debug on Mac OS X
 		if runtime.GOOS == "linux" {
-			err = vrouter.createBridgeIface(dockerNet.String())
+			err = vrouter.createBridgeIface(BridgeIPNet.String())
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
 
+		// monitor the routing table change
 		err = vrouter.ManageRoute()
 		if err != nil {
 			log.Fatal(err)
