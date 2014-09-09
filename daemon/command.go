@@ -85,7 +85,7 @@ func (cmd *Command) Run(c *cobra.Command, args []string) {
 		// create bridge if we're running under linux
 		// to debug on Mac OS X
 		if runtime.GOOS == "linux" {
-			err = vrouter.createBridgeIface(BridgeIPNet.String())
+			err = vrouter.createBridgeIface(bridgeIPNet.String())
 			if err != nil {
 				log.Fatal(err)
 			}
