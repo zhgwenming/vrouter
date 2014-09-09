@@ -106,7 +106,6 @@ func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
 
 func (d *Daemon) KeepAlive() error {
 	var err error
-	keyPrefix := registry.REGISTRY_PREFIX + "/" + "host"
 	if len(d.hostname) == 0 {
 		d.hostname, err = os.Hostname()
 		if err != nil {
@@ -114,7 +113,7 @@ func (d *Daemon) KeepAlive() error {
 		}
 	}
 
-	key := keyPrefix + "/" + d.hostname
+	key := registry.NodeActivePath(d.hostname)
 	value := "alive"
 	ttl := uint64(5)
 	return d.doKeepAlive(key, value, ttl)

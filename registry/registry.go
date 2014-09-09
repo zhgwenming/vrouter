@@ -38,6 +38,10 @@ func BridgeInfoPath(node string) string {
 	return RouterHostsPrefix() + "/" + node + "/" + "bridgeinfo"
 }
 
+func NodeActivePath(node string) string {
+	return RouterHostsPrefix() + "/" + node + "/" + "active"
+}
+
 func NodeRoutePath(node string) string {
 	return RouterRoutesPrefix() + "/" + node
 }
