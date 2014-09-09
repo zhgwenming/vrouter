@@ -176,6 +176,7 @@ func (d *Daemon) updateNodeRoute(ip string) error {
 	r := NewRoute(dnet, ip)
 
 	client := d.etcdClient
+	key := registry.NodeRoutePath(d.hostname)
 	if _, err := client.Create(key, value, ttl); err != nil {
 		log.Printf("Error to create node: %s", err)
 		return err
