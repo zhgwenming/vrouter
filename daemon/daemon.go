@@ -27,9 +27,8 @@ type Daemon struct {
 	bridgeIPNet *net.IPNet
 
 	// interface information
-	iface *net.Interface
-	//ifaceIPNet *net.IPNet
-	hostip string
+	iface      *net.Interface
+	ifaceIPNet *net.IPNet
 }
 
 func NewDaemon() *Daemon {
@@ -170,9 +169,11 @@ func (d *Daemon) updateRouterInterfaceNetIP(ip string) error {
 }
 
 func (d *Daemon) updateNodeRoute() error {
-	dnet := d.bridgeIPNet.Network()
-	ip := d.hostip
-	r := NewRoute(dnet, ip)
+	ipnet := d.bridgeIPNet
+	target := ipnet.IP.Mask(ipnet.Mask).String()
+
+	gw := d.ifaceIPNet.IP.String()
+	r := NewRoute(target, gw)
 
 	client := d.etcdClient
 	key := registry.NodeRoutePath(d.Hostname)
@@ -191,6 +192,15 @@ func (d *Daemon) BindBridgeIPNet(ifaceip string) (*net.IPNet, error) {
 	var err error
 	var brnet *net.IPNet
 
+	// update daemon information
+	d.iface = netinfo.InterfaceByIPNet(ifaceip)
+	if ip, ipnet, err := net.ParseCIDR(ifaceip); err != nil {
+		return brnet, err
+	} else {
+		ipnet.IP = ip
+		d.ifaceIPNet = ipnet
+	}
+
 	if d.Hostname == "" {
 		d.Hostname, err = os.Hostname()
 		if err != nil {
@@ -207,8 +217,6 @@ func (d *Daemon) BindBridgeIPNet(ifaceip string) (*net.IPNet, error) {
 		return brnet, err
 	}
 	d.bridgeIPNet = brnet
-
-	d.iface = netinfo.InterfaceByIPNet(ifaceip)
 
 	if err = d.updateRouterInterfaceNetIP(ifaceip); err != nil {
 		return brnet, err
