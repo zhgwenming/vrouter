@@ -199,7 +199,10 @@ func (d *Daemon) BindDockerNet(ip string) (*net.IPNet, error) {
 	}
 	d.dockernet = hostnet
 
-	err = d.updateRouterInterfaceNetIP(ip)
+	if err = d.updateRouterInterfaceNetIP(ip); err != nil {
+		return hostnet, err
+	}
+	err = d.updateNodeRoute()
 
 	return hostnet, err
 }
