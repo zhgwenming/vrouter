@@ -70,7 +70,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 
 	//fmt.Printf("hostnames %d, %v\n", len(hostNames), hostNames)
 	for i, node := range hostNames {
-		key := registry.DockerBridgePath(node)
+		key := registry.BridgeInfoPath(node)
 		log.Printf("initialize config for host %s\n", node)
 		if _, err := registryClient.Create(key, nets[i].String(), 0); err != nil {
 			log.Printf("Error to create node: %s", err)
