@@ -169,8 +169,11 @@ func (d *Daemon) updateRouterInterfaceNetIP(ip string) error {
 }
 
 func (d *Daemon) updateNodeRoute() error {
-	ipnet := d.bridgeIPNet
-	target := ipnet.IP.Mask(ipnet.Mask).String()
+	ipnet := *d.bridgeIPNet
+	ip := ipnet.IP.Mask(ipnet.Mask)
+
+	ipnet.IP = ip
+	target := ipnet.String()
 
 	gw := d.ifaceIPNet.IP.String()
 	r := NewRoute(target, gw)
