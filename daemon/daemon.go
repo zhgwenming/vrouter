@@ -17,11 +17,11 @@ import (
 )
 
 type Daemon struct {
-	hostname   string
-	hostip     string
-	dockernet  *net.IPNet
-	iface      *net.Interface
-	etcdClient *etcd.Client
+	hostname    string
+	hostip      string
+	bridgeIPNet *net.IPNet
+	iface       *net.Interface
+	etcdClient  *etcd.Client
 }
 
 func NewDaemon(etcdClient *etcd.Client, hostname, ip string, iface *net.Interface) *Daemon {
@@ -119,7 +119,8 @@ func (d *Daemon) KeepAlive() error {
 	return d.doKeepAlive(key, value, ttl)
 }
 
-func (d *Daemon) getDockerIPNet() (*net.IPNet, error) {
+// return ip, ipnet, err
+func (d *Daemon) getBridgeIPNet() (*net.IPNet, error) {
 	client := d.etcdClient
 	key := registry.BridgeInfoPath(d.hostname)
 
@@ -161,7 +162,7 @@ func (d *Daemon) updateRouterInterfaceNetIP(ip string) error {
 }
 
 func (d *Daemon) updateNodeRoute() error {
-	dnet := d.dockernet.String()
+	dnet := d.bridgeIPNet.Network()
 	ip := d.hostip
 	r := NewRoute(dnet, ip)
 
@@ -180,12 +181,12 @@ func (d *Daemon) updateNodeRoute() error {
 // associate to nic ip address to an allocated IPNet
 func (d *Daemon) BindDockerNet(ip string) (*net.IPNet, error) {
 	var err error
-	var hostnet *net.IPNet
+	var brnet *net.IPNet
 
 	if d.hostname == "" {
 		d.hostname, err = os.Hostname()
 		if err != nil {
-			return hostnet, err
+			return brnet, err
 		}
 	}
 
@@ -194,17 +195,17 @@ func (d *Daemon) BindDockerNet(ip string) (*net.IPNet, error) {
 	}
 
 	// get node IPNet info first
-	if hostnet, err = d.getDockerIPNet(); err != nil {
-		return hostnet, err
+	if brnet, err = d.getBridgeIPNet(); err != nil {
+		return brnet, err
 	}
-	d.dockernet = hostnet
+	d.bridgeIPNet = brnet
 
 	if err = d.updateRouterInterfaceNetIP(ip); err != nil {
-		return hostnet, err
+		return brnet, err
 	}
 	err = d.updateNodeRoute()
 
-	return hostnet, err
+	return brnet, err
 }
 
 func (d *Daemon) createBridgeIface(bridgeIface, ifaceAddr string) error {
