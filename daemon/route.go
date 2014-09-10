@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"errors"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
 	"net"
 	"strings"
@@ -15,12 +16,12 @@ func NewRoute(target, gw string) *Route {
 	return &Route{target: target, gw: gw}
 }
 
-func ParseRoute(str string) *Route {
+func ParseRoute(str string) (*Route, error) {
 	r := strings.Split(str, ":")
 	if len(r) != 2 {
-		return nil
+		return nil, errors.New("Wrong route format")
 	}
-	return &Route{target: r[0], gw: r[1]}
+	return &Route{target: r[0], gw: r[1]}, nil
 }
 
 func (r *Route) AddRoute(iface *net.Interface) error {

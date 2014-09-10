@@ -53,7 +53,10 @@ func (d *Daemon) listRoute() ([]*Route, uint64, error) {
 				continue
 			}
 			value := host.Value
-			if r := ParseRoute(value); r != nil {
+			if r, err := ParseRoute(value); err != nil {
+				log.Printf("error to parse route: %s", err)
+				continue
+			} else {
 				routes = append(routes, r)
 			}
 		}
@@ -90,8 +93,13 @@ func (d *Daemon) ManageRoute() error {
 		//	continue
 		//}
 		value := host.Value
-		r := ParseRoute(value)
-		if err := r.AddRoute(d.iface); err != nil {
+		r, err := ParseRoute(value)
+		if err != nil {
+			log.Printf("error to parse route: %s", err)
+			continue
+		}
+
+		if err = r.AddRoute(d.iface); err != nil {
 			log.Printf("AddRoute error(%v): %s", r, err)
 		}
 	}
