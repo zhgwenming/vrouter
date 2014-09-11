@@ -10,7 +10,7 @@ REPO = vrouter
 
 URLPATH = $(GPATH)/src/$(URL)
 
-all: run
+all: vrouter
 
 build: vrouter
 
