@@ -1,7 +1,5 @@
 .PHONY: all rhel7
 
-all: vrouter
-
 GPATH = $(PWD)/build
 GOPATH := $(GPATH):${GOPATH}
 GOBIN = 
@@ -11,6 +9,15 @@ URL = github.com/zhgwenming
 REPO = vrouter
 
 URLPATH = $(GPATH)/src/$(URL)
+
+all: run
+
+build: vrouter
+
+.PHONY: run
+
+run: cmd/vrouter/*.go
+	go run cmd/vrouter/main.go $(MAKEOPTS)
 
 vrouter: cmd/vrouter/*.go
 	@[ -d $(URLPATH) ] || mkdir -p $(URLPATH)
