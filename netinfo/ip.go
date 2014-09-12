@@ -23,7 +23,7 @@ func ListIPNet(ip4Only bool) []*net.IPNet {
 				ipnet, ok := ipaddr.(*net.IPNet)
 
 				if !ok {
-					log.Fatal("assertion err: %v\n", ipnet)
+					log.Fatalf("assertion err: %v\n", ipnet)
 				}
 
 				ip4 := ipnet.IP.To4()
@@ -57,7 +57,7 @@ iface:
 				ipnet, ok := ipaddr.(*net.IPNet)
 
 				if !ok {
-					log.Fatal("assertion err: %v\n", ipnet)
+					log.Fatalf("assertion err: %v\n", ipnet)
 				}
 
 				ip4 := ipnet.IP.To4()
@@ -105,7 +105,7 @@ func GetAllSubnet(ipnet *net.IPNet, hostbits int) []net.IPNet {
 
 		ipmask := net.CIDRMask(bits-hostbits, bits)
 
-		subipnet := net.IPNet{ipbuf, ipmask}
+		subipnet := net.IPNet{IP: ipbuf, Mask: ipmask}
 		subnet = append(subnet, subipnet)
 	}
 
