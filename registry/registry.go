@@ -2,6 +2,7 @@ package registry
 
 import (
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	"strings"
 )
 
 //v2/keys/_vrouter
@@ -84,4 +85,28 @@ func (r *Registry) Set(key, value string) error {
 		}
 		return nil
 	}
+}
+
+// List directory
+func (r *Registry) List(prefix string) (map[string]string, uint64, error) {
+
+	var index uint64
+	var err error
+
+	result := make(map[string]string, 256)
+	client := r.etcdClient
+
+	if resp, err := client.Get(prefix, true, true); err == nil {
+		index = resp.EtcdIndex
+		nodes := resp.Node.Nodes
+		for _, node := range nodes {
+			itemKey := node.Key
+			itemKey = strings.TrimLeft(itemKey, prefix)
+			value := node.Value
+
+			result[itemKey] = value
+		}
+	}
+	return result, index, err
+
 }
