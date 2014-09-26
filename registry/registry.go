@@ -110,3 +110,29 @@ func (r *Registry) List(prefix string) (map[string]string, uint64, error) {
 	return result, index, err
 
 }
+
+// poll the specified prefix
+func (r *Registry) Poll(prefix string, itemReceiver chan *Item) (map[string]string, error) {
+	var err error
+	var result map[string]string
+	var index uint64
+
+	client := r.etcdClient
+	receiver := make(chan *etcd.Response, 4)
+
+	if result, index, err = r.List(prefix); err == nil {
+		go client.Watch(prefix, index, true, receiver, nil)
+		go func() {
+			//for resp := range receiver {
+			//	node := resp.Node
+			//	value := node.Value
+			//	item = new(Item)
+			//	item.key =
+
+			//}
+		}()
+	}
+
+	return result, err
+
+}
