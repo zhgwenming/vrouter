@@ -203,7 +203,7 @@ func (d *Daemon) updateNodeRoute() error {
 	ttl := uint64(0)
 
 	if _, err := client.Create(key, value, ttl); err != nil {
-		log.Printf("Error to create node: %s", err)
+		//log.Printf("Error to create node: %s", err)
 		return err
 	}
 	return nil
