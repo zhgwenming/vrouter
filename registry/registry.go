@@ -64,3 +64,24 @@ func (r *Registry) Create(key, value string, ttl uint64) error {
 
 	return nil
 }
+
+// set key to value
+// create if not exist
+func (r *Registry) Set(key, value string) error {
+	client := r.etcdClient
+	ttl := uint64(0)
+
+	if resp, err := client.Get(key, false, false); err == nil {
+		// exist, compare the value
+		if resp.Node.Value != value {
+			_, err = client.Update(key, value, ttl)
+		}
+		return err
+	} else {
+		if _, err = client.Create(key, value, ttl); err != nil {
+			//log.Printf("Error to create node: %s", err)
+			return err
+		}
+		return nil
+	}
+}
