@@ -258,14 +258,21 @@ func (d *Daemon) BindBridgeIPNet(ifaceip string) (*net.IPNet, error) {
 	return brnet, err
 }
 
-func (d *Daemon) createBridgeIface(ifaceAddr string) error {
+func (d *Daemon) CreateBridge(ifaceAddr string) error {
+	ipAddr, ipNet, err := net.ParseCIDR(ifaceAddr)
+	if err != nil {
+		return err
+	}
+
 	kv, err := kernel.GetKernelVersion()
 	// only set the bridge's mac address if the kernel version is > 3.3
 	// before that it was not supported
 	setBridgeMacAddr := err == nil && (kv.Kernel >= 3 && kv.Major >= 3)
 	err = netlink.CreateBridge(d.bridgeName, setBridgeMacAddr)
 	if err != nil {
-		return err
+		log.Printf("error to create bridge %s", err)
+	} else {
+		log.Printf("Created bridge %s", d.bridgeName)
 	}
 
 	iface, err := net.InterfaceByName(d.bridgeName)
@@ -273,28 +280,28 @@ func (d *Daemon) createBridgeIface(ifaceAddr string) error {
 		return err
 	}
 
-	ipAddr, ipNet, err := net.ParseCIDR(ifaceAddr)
-	if err != nil {
-		return err
-	}
+	if iface.Flags&net.FlagUp != 0 {
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return err
+		}
 
-	if netlink.NetworkLinkAddIp(iface, ipAddr, ipNet); err != nil {
-		return fmt.Errorf("Unable to add private network: %s", err)
-	}
-	if err := netlink.NetworkLinkUp(iface); err != nil {
-		return fmt.Errorf("Unable to start network bridge: %s", err)
-	}
+		for _, addr := range addrs {
+			if ifaceAddr == addr.String() {
+				return nil
+			}
+		}
+		return fmt.Errorf("Wrong addr %v assigned to bridge %s", addrs, d.bridgeName)
+	} else {
+		if netlink.NetworkLinkAddIp(iface, ipAddr, ipNet); err != nil {
+			return fmt.Errorf("Unable to add private network: %s", err)
+		}
+		if err := netlink.NetworkLinkUp(iface); err != nil {
+			return fmt.Errorf("Unable to start network bridge: %s", err)
+		}
 
-	return nil
-}
-
-func (d *Daemon) CreateBridge(ifaceAddr string) error {
-	_, err := net.InterfaceByName(d.bridgeName)
-	if err != nil {
-		log.Printf("Creating new bridge %s", d.bridgeName)
-		err = d.createBridgeIface(ifaceAddr)
+		return nil
 	}
-	return err
 }
 
 func WritePid(pidfile string) error {
