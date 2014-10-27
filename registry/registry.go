@@ -55,6 +55,10 @@ func NodeRoutePath(node string) string {
 	return RouterRoutesPrefix() + "/" + node
 }
 
+func NewRegistry(etcd *etcd.Client) *Registry {
+	return &Registry{etcd}
+}
+
 func (r *Registry) Create(key, value string, ttl uint64) error {
 	client := r.etcdClient
 
@@ -135,4 +139,22 @@ func (r *Registry) Poll(prefix string, itemReceiver chan *Item) (map[string]stri
 
 	return result, err
 
+}
+
+func Set(client *etcd.Client, key, value string) error {
+	ttl := uint64(0)
+
+	if resp, err := client.Get(key, false, false); err == nil {
+		// exist, compare the value
+		if resp.Node.Value != value {
+			_, err = client.Update(key, value, ttl)
+		}
+		return err
+	} else {
+		if _, err = client.Create(key, value, ttl); err != nil {
+			//log.Printf("Error to create node: %s", err)
+			return err
+		}
+		return nil
+	}
 }

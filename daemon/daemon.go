@@ -200,9 +200,8 @@ func (d *Daemon) updateNodeRoute() error {
 	client := d.etcdClient
 	key := registry.NodeRoutePath(d.Hostname)
 	value := r.String()
-	ttl := uint64(0)
 
-	if _, err := client.Create(key, value, ttl); err != nil {
+	if err := registry.Set(client, key, value); err != nil {
 		//log.Printf("Error to create node: %s", err)
 		return err
 	}
