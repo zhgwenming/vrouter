@@ -277,6 +277,15 @@ func (d *Daemon) createBridgeIface(ifaceAddr string) error {
 	return nil
 }
 
+func (d *Daemon) CreateBridge(ifaceAddr string) error {
+	_, err := net.InterfaceByName(d.bridgeName)
+	if err != nil {
+		log.Printf("Creating new bridge %s", d.bridgeName)
+		err = d.createBridgeIface(ifaceAddr)
+	}
+	return err
+}
+
 func WritePid(pidfile string) error {
 	var file *os.File
 
