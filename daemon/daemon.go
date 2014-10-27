@@ -270,7 +270,7 @@ func (d *Daemon) CreateBridge(ifaceAddr string) error {
 	setBridgeMacAddr := err == nil && (kv.Kernel >= 3 && kv.Major >= 3)
 	err = netlink.CreateBridge(d.bridgeName, setBridgeMacAddr)
 	if err != nil {
-		log.Printf("error to create bridge %s", err)
+		log.Printf("error to create bridge: %s", err)
 	} else {
 		log.Printf("Created bridge %s", d.bridgeName)
 	}

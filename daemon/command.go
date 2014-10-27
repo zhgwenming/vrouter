@@ -82,7 +82,7 @@ func (cmd *Command) Run(c *cobra.Command, args []string) {
 		if err != nil {
 			log.Fatal("Failed to bind router interface: ", err)
 		} else {
-			log.Printf("daemon: get ipnet %v\n", bridgeIPNet)
+			log.Printf("Requested bridge ip - %v\n", bridgeIPNet)
 		}
 
 		// create bridge if we're running under linux
