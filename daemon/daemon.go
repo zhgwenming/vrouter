@@ -111,7 +111,6 @@ func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
 	client := d.etcdClient
 
 	if resp, err := client.Create(key, value, ttl); err != nil {
-		log.Printf("Error to create node: %s", err)
 		return err
 	} else {
 		//log.Printf("No instance exist on this node, starting")
@@ -142,7 +141,19 @@ func (d *Daemon) KeepAlive() error {
 	key := registry.NodeActivePath(d.Hostname)
 	value := "alive"
 	ttl := uint64(5)
-	return d.doKeepAlive(key, value, ttl)
+
+	// just retry once
+	for i := 0; i < 2; i++ {
+		if i > 0 {
+			log.Printf("Waiting keepalive lock..")
+			time.Sleep(5 * time.Second)
+		}
+		if err = d.doKeepAlive(key, value, ttl); err == nil {
+			break
+		}
+	}
+
+	return err
 }
 
 // return ip, ipnet, err

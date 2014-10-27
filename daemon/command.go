@@ -71,7 +71,10 @@ func (cmd *Command) Run(c *cobra.Command, args []string) {
 
 		// start keepalive first
 		vrouter.etcdClient = etcd.NewClient(servers)
-		vrouter.KeepAlive()
+		err := vrouter.KeepAlive()
+		if err != nil {
+			log.Fatalf("error to keepalive: %s, other instance running?", err)
+		}
 
 		// bind and get a bridge IPNet with our iface ip
 		// create the routing table entry in registry
