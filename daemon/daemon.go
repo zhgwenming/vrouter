@@ -22,6 +22,9 @@ type Daemon struct {
 	// host relate information
 	Hostname string
 
+	// overlay network ip for nat
+	overlayIPNet *net.IPNet
+
 	// bridge information
 	bridgeName  string
 	bridgeIPNet *net.IPNet
@@ -157,10 +160,10 @@ func (d *Daemon) KeepAlive() error {
 	return err
 }
 
-// return ip, ipnet, err
-func (d *Daemon) getBridgeIPNet() (*net.IPNet, error) {
+// load IPNet info from config server
+func (d *Daemon) loadIPNet(key string) (*net.IPNet, error) {
 	client := d.etcdClient
-	key := registry.BridgeInfoPath(d.Hostname)
+	key = registry.BridgeInfoPath(d.Hostname)
 
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
@@ -174,6 +177,17 @@ func (d *Daemon) getBridgeIPNet() (*net.IPNet, error) {
 			return ipnet, nil
 		}
 	}
+}
+
+// return ip, ipnet, err
+func (d *Daemon) getBridgeIPNet() (*net.IPNet, error) {
+	key := registry.BridgeInfoPath(d.Hostname)
+	return d.loadIPNet(key)
+}
+
+func (d *Daemon) getOverlayIPNet() (*net.IPNet, error) {
+	key := registry.RouterOverlayPath()
+	return d.loadIPNet(key)
 }
 
 func (d *Daemon) updateRouterInterfaceNetIP(ip string) error {
@@ -250,6 +264,12 @@ func (d *Daemon) BindBridgeIPNet(ifaceip string) (*net.IPNet, error) {
 		return brnet, err
 	}
 	d.bridgeIPNet = brnet
+
+	// load overlay network information
+	if brnet, err = d.getOverlayIPNet(); err != nil {
+		return brnet, err
+	}
+	d.overlayIPNet = brnet
 
 	if err = d.updateRouterInterfaceNetIP(ifaceip); err != nil {
 		return brnet, err
