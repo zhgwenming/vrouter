@@ -82,7 +82,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 
 	// create the overlay network ip info
 	key := registry.RouterOverlayPath()
-	log.Printf("initialize overlay network ip information - %s\n", key)
+	log.Printf("initialize overlay network ip information with %s\n", overlaySubnet)
 	if _, err := registryClient.Create(key, overlaySubnet, 0); err != nil {
 		log.Printf("Error to create node: %s", err)
 	}
