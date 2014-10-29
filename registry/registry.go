@@ -27,7 +27,7 @@ type Registry struct {
 }
 
 const (
-	DEFAULT_SUBNET  = "10.0.0.0/16"
+	DEFAULT_SUBNET  = "172.16.0.0/16"
 	REGISTRY_PREFIX = "_vrouter"
 )
 
