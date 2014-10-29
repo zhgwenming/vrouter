@@ -4,7 +4,7 @@ import (
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/zhgwenming/vrouter/netinfo"
-	//"github.com/zhgwenming/vrouter/registry"
+	"github.com/zhgwenming/vrouter/registry"
 	"log"
 	"net"
 	"os"
@@ -67,7 +67,9 @@ func (cmd *Command) InitCmd(servers *string) *cobra.Command {
 
 func (cmd *Command) Run(c *cobra.Command, args []string) {
 	if cmd.daemonMode {
-		//registry.StartEtcd("-h")
+		daemon := cmd.daemon
+		// -peer-addr 127.0.0.1:7001 -addr 127.0.0.1:4001 -data-dir machines/machine1 -name machine1
+		go registry.StartEtcd("-peer-addr", "127.0.0.1:7001", "-addr", "127.0.0.1:4001", "-data-dir", "machines/"+daemon.Hostname, "-name", daemon.Hostname)
 
 		servers := strings.Split(*cmd.etcdServers, ",")
 		vrouter := cmd.daemon
