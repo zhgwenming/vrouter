@@ -92,7 +92,12 @@ func GetAllSubnet(ipnet *net.IPNet, hostbits int) []net.IPNet {
 	numberSubnet := 1 << uint(netBits)
 	subnet := make([]net.IPNet, 0, numberSubnet)
 
-	for i := uint32(0); i < uint32(numberSubnet); i++ {
+	// network start from x.x.1.0
+	// 	172.16.1.0 for example
+	//
+	// x.x.0.x network reserved as router IPs
+	// x.x.255.x network reserved
+	for i := uint32(1); i < uint32(numberSubnet); i++ {
 		ipbuf := make([]byte, 4)
 		number := i << uint(hostbits)
 		binary.BigEndian.PutUint32(ipbuf, number)
