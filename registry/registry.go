@@ -39,6 +39,10 @@ func RouterRoutesPrefix() string {
 	return REGISTRY_PREFIX + "/" + "routes"
 }
 
+func RouterOverlayPath() string {
+	return REGISTRY_PREFIX + "/" + "ipnet_overlay"
+}
+
 func IfaceInfoPath(node string) string {
 	return RouterHostsPrefix() + "/" + node + "/" + "ifaceinfo"
 }
