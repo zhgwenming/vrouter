@@ -9,9 +9,9 @@ import (
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/etcd/server"
 )
 
-func StartEtcd() {
+func StartEtcd(args ...string) {
 	var config = config.New()
-	if err := config.Load(os.Args[1:]); err != nil {
+	if err := config.Load(args); err != nil {
 		fmt.Println(server.Usage() + "\n")
 		fmt.Println(err.Error() + "\n")
 		os.Exit(1)
