@@ -14,7 +14,8 @@ import (
 var (
 	machines       string
 	hostNames      []string
-	globalSubnet   string
+	cellSubnet     string
+	overlaySubnet  string
 	registryClient *etcd.Client
 	etcdServers    *string
 )
@@ -33,7 +34,8 @@ func InitCmd(parent *cobra.Command, servers *string) {
 		Run:   registryInit,
 	}
 
-	initCmd.Flags().StringVarP(&globalSubnet, "ipnet", "n", registry.DEFAULT_SUBNET, "cidr ip subnet information")
+	initCmd.Flags().StringVarP(&cellSubnet, "cellnet", "c", registry.DEFAULT_SUBNET, "cell cidr subnet ip address")
+	initCmd.Flags().StringVarP(&overlaySubnet, "overlay", "o", registry.DEFAULT_SUBNET, "the whole overlay subnet ip address")
 
 	parent.AddCommand(initCmd)
 }
@@ -57,7 +59,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 		log.Fatal("No machine list specified")
 	}
 
-	_, ipnet, err := net.ParseCIDR(globalSubnet)
+	_, ipnet, err := net.ParseCIDR(cellSubnet)
 
 	if err != nil {
 		log.Fatal(err)
@@ -65,7 +67,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 
 	nets := netinfo.GetAllSubnet(ipnet, 8)
 
-	fmt.Printf("vrouter init %s, %v\n", globalSubnet, ipnet)
+	fmt.Printf("vrouter init %s, %v\n", cellSubnet, ipnet)
 	//fmt.Printf("%v\n", nets)
 
 	//fmt.Printf("hostnames %d, %v\n", len(hostNames), hostNames)
