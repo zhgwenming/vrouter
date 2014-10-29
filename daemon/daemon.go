@@ -88,10 +88,11 @@ func (d *Daemon) ManageRoute() error {
 
 	for resp := range receiver {
 		host := resp.Node
-		log.Printf("%v", host.Key)
-		//if hostKey := host.Key; strings.HasSuffix(hostKey, d.Hostname) {
-		//	continue
-		//}
+		if hostKey := host.Key; strings.HasSuffix(hostKey, d.Hostname) {
+			continue
+		}
+
+		log.Printf("new node added to cluster: %v", host.Key)
 		value := host.Value
 		r, err := ParseRoute(value)
 		if err != nil {
