@@ -6,6 +6,21 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/coreos/etcd/config",
+			"Comment": "v0.4.6",
+			"Rev": "49e0dff2b8529801beb09164729caf96a5b93ef0"
+		},
+		{
+			"ImportPath": "github.com/coreos/etcd/etcd",
+			"Comment": "v0.4.6",
+			"Rev": "49e0dff2b8529801beb09164729caf96a5b93ef0"
+		},
+		{
+			"ImportPath": "github.com/coreos/etcd/server",
+			"Comment": "v0.4.6",
+			"Rev": "49e0dff2b8529801beb09164729caf96a5b93ef0"
+		},
+		{
 			"ImportPath": "github.com/coreos/go-etcd/etcd",
 			"Comment": "v0.2.0-rc1-73-g895202b",
 			"Rev": "895202b626e0ff14fb87457c12112ed109b71b53"
