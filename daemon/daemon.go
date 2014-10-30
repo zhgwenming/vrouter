@@ -297,8 +297,13 @@ func (d *Daemon) CreateBridge(ifaceAddr string) error {
 		bip := d.bridgeIPNet
 		oip := d.overlayIPNet
 
-		bridgeNet := bip.IP.Mask(bip.Mask).String()
-		overlayNet := oip.IP.Mask(oip.Mask).String()
+		// remove the host part in ipaddr
+		bip.IP = bip.IP.Mask(bip.Mask)
+		oip.IP = oip.IP.Mask(oip.Mask)
+
+		bridgeNet := bip.String()
+		overlayNet := oip.String()
+		log.Printf("bip %v oip %v", bip, oip)
 		if err = IptablesMasq(overlayNet, bridgeNet); err != nil {
 			log.Printf("error to create masquerade iptables rule: %s", err)
 		}
