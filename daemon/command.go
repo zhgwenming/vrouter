@@ -80,7 +80,16 @@ func (cmd *Command) Run(c *cobra.Command, args []string) {
 		vrouter := cmd.Daemon
 
 		// start keepalive first
-		vrouter.etcdClient = etcd.NewClient(servers)
+		if cmd.CaFile != "" && cmd.CertFile != "" && cmd.KeyFile != "" {
+			eclient, err := etcd.NewTLSClient(servers, cmd.CertFile, cmd.KeyFile, cmd.CaFile)
+			if err != nil {
+				log.Fatalf("error to create tls client: %s", err)
+			}
+
+			vrouter.etcdClient = eclient
+		} else {
+			vrouter.etcdClient = etcd.NewClient(servers)
+		}
 		err := vrouter.KeepAlive()
 		if err != nil {
 			log.Fatalf("error to keepalive: %s, other instance running?", err)
