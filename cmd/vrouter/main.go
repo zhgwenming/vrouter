@@ -4,26 +4,27 @@ import (
 	//"fmt"
 	"github.com/zhgwenming/vrouter/controller"
 	"github.com/zhgwenming/vrouter/daemon"
+	"github.com/zhgwenming/vrouter/registry"
 	"log"
-)
-
-var (
-	etcdServers string
 )
 
 func main() {
 
-	cmd := daemon.NewCommand()
-	routerCmd := cmd.InitCmd(&etcdServers)
+	// etcd client
+	etcdConfig := new(registry.ClientConfig)
 
-	routerCmd.PersistentFlags().StringVarP(&etcdServers, "etcd_servers", "e", "https://127.0.0.1:4001", "etcd server uri")
+	// daemon instance
+	cmd := daemon.NewConfig()
+
+	routerCmd := cmd.InitCmd(etcdConfig)
+	routerCmd.PersistentFlags().StringVarP(&etcdConfig.Servers, "etcd_servers", "e", "https://127.0.0.1:4001", "etcd server uri")
 
 	// cafile/certfile/keyfile
-	routerCmd.PersistentFlags().StringVarP(&cmd.CaFile, "ca_file", "a", "", "etcd server ca file")
-	routerCmd.PersistentFlags().StringVarP(&cmd.CertFile, "cert_file", "t", "", "etcd server cert file")
-	routerCmd.PersistentFlags().StringVarP(&cmd.KeyFile, "key_file", "k", "", "etcd server key file")
+	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CaFile, "ca_file", "a", "", "etcd server ca file")
+	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CertFile, "cert_file", "t", "", "etcd server cert file")
+	routerCmd.PersistentFlags().StringVarP(&etcdConfig.KeyFile, "key_file", "k", "", "etcd server key file")
 
-	controller.InitCmd(routerCmd, &etcdServers)
+	controller.InitCmd(routerCmd, etcdConfig)
 
 	if err := routerCmd.Execute(); err != nil {
 		log.Fatal(err)

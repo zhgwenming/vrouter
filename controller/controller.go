@@ -12,19 +12,17 @@ import (
 )
 
 var (
-	machines       string
-	hostNames      []string
-	cellSubnet     string
-	overlaySubnet  string
-	registryClient *etcd.Client
-	etcdServers    *string
+	machines      string
+	hostNames     []string
+	cellSubnet    string
+	overlaySubnet string
+	etcdConfig    *registry.ClientConfig
+	etcdClient    *etcd.Client
 )
 
 // create etcd client
 // register cobra subcommand
-func InitCmd(parent *cobra.Command, servers *string) {
-
-	etcdServers = servers
+func InitCmd(parent *cobra.Command, client *registry.ClientConfig) {
 
 	// register new subcommand
 	initCmd := &cobra.Command{
@@ -42,8 +40,7 @@ func InitCmd(parent *cobra.Command, servers *string) {
 
 func registryInit(cmd *cobra.Command, args []string) {
 
-	servers := strings.Split(*etcdServers, ",")
-	registryClient := etcd.NewClient(servers)
+	etcdClient = registry.NewClient(etcdConfig)
 
 	if len(args) > 0 {
 		machines = args[0]
@@ -74,7 +71,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 	for i, node := range hostNames {
 		key := registry.BridgeInfoPath(node)
 		log.Printf("initialize config for host %s\n", node)
-		if _, err := registryClient.Create(key, nets[i].String(), 0); err != nil {
+		if _, err := etcdClient.Create(key, nets[i].String(), 0); err != nil {
 			log.Printf("Error to create node: %s", err)
 		}
 
@@ -83,7 +80,7 @@ func registryInit(cmd *cobra.Command, args []string) {
 	// create the overlay network ip info
 	key := registry.RouterOverlayPath()
 	log.Printf("initialize overlay network ip information with %s\n", overlaySubnet)
-	if _, err := registryClient.Create(key, overlaySubnet, 0); err != nil {
+	if _, err := etcdClient.Create(key, overlaySubnet, 0); err != nil {
 		log.Printf("Error to create node: %s", err)
 	}
 }

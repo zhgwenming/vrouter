@@ -19,23 +19,21 @@ import (
 type Daemon struct {
 	etcdClient *etcd.Client
 
-	// host relate information
-	Hostname string
-
 	// overlay network ip for nat
 	overlayIPNet *net.IPNet
 
-	// bridge information
-	bridgeName  string
 	bridgeIPNet *net.IPNet
 
 	// interface information
 	iface      *net.Interface
 	ifaceIPNet *net.IPNet
+
+	// config
+	config *Config
 }
 
-func NewDaemon() *Daemon {
-	return &Daemon{}
+func NewDaemon(cfg *Config, client *etcd.Client) *Daemon {
+	return &Daemon{etcdClient: client, config: cfg}
 }
 
 func (d *Daemon) listRoute() ([]*Route, uint64, error) {
@@ -52,7 +50,7 @@ func (d *Daemon) listRoute() ([]*Route, uint64, error) {
 		index = resp.EtcdIndex
 		hosts := resp.Node.Nodes
 		for _, host := range hosts {
-			if hostKey := host.Key; strings.HasSuffix(hostKey, d.Hostname) {
+			if hostKey := host.Key; strings.HasSuffix(hostKey, d.config.Hostname) {
 				continue
 			}
 			value := host.Value
@@ -91,7 +89,7 @@ func (d *Daemon) ManageRoute() error {
 
 	for resp := range receiver {
 		host := resp.Node
-		if hostKey := host.Key; strings.HasSuffix(hostKey, d.Hostname) {
+		if hostKey := host.Key; strings.HasSuffix(hostKey, d.config.Hostname) {
 			continue
 		}
 
@@ -135,14 +133,14 @@ func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
 
 func (d *Daemon) KeepAlive() error {
 	var err error
-	if len(d.Hostname) == 0 {
-		d.Hostname, err = os.Hostname()
+	if len(d.config.Hostname) == 0 {
+		d.config.Hostname, err = os.Hostname()
 		if err != nil {
 			return err
 		}
 	}
 
-	key := registry.NodeActivePath(d.Hostname)
+	key := registry.NodeActivePath(d.config.Hostname)
 	value := "alive"
 	ttl := uint64(5)
 
@@ -163,7 +161,7 @@ func (d *Daemon) KeepAlive() error {
 // load IPNet info from config server
 func (d *Daemon) loadIPNet(key string) (*net.IPNet, error) {
 	client := d.etcdClient
-	key = registry.BridgeInfoPath(d.Hostname)
+	key = registry.BridgeInfoPath(d.config.Hostname)
 
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
@@ -181,7 +179,7 @@ func (d *Daemon) loadIPNet(key string) (*net.IPNet, error) {
 
 // return ip, ipnet, err
 func (d *Daemon) getBridgeIPNet() (*net.IPNet, error) {
-	key := registry.BridgeInfoPath(d.Hostname)
+	key := registry.BridgeInfoPath(d.config.Hostname)
 	return d.loadIPNet(key)
 }
 
@@ -193,13 +191,13 @@ func (d *Daemon) getOverlayIPNet() (*net.IPNet, error) {
 func (d *Daemon) updateRouterInterfaceNetIP(ip string) error {
 	client := d.etcdClient
 
-	key := registry.IfaceInfoPath(d.Hostname)
+	key := registry.IfaceInfoPath(d.config.Hostname)
 	value := ip
 	ttl := uint64(0)
 
 	if resp, err := client.Get(key, false, false); err == nil {
 		if r := resp.Node.Value; r == value {
-			log.Printf("found exist brideginfo for node: %s", d.Hostname)
+			log.Printf("found exist brideginfo for node: %s", d.config.Hostname)
 			return nil
 		}
 	}
@@ -224,7 +222,7 @@ func (d *Daemon) updateNodeRoute() error {
 	r := NewRoute(target, gw)
 
 	client := d.etcdClient
-	key := registry.NodeRoutePath(d.Hostname)
+	key := registry.NodeRoutePath(d.config.Hostname)
 	value := r.String()
 
 	if err := registry.Set(client, key, value); err != nil {
@@ -248,8 +246,8 @@ func (d *Daemon) BindBridgeIPNet(ifaceip string) (*net.IPNet, error) {
 		d.ifaceIPNet = ipnet
 	}
 
-	if d.Hostname == "" {
-		d.Hostname, err = os.Hostname()
+	if d.config.Hostname == "" {
+		d.config.Hostname, err = os.Hostname()
 		if err != nil {
 			return brnet, err
 		}
@@ -289,14 +287,14 @@ func (d *Daemon) CreateBridge(ifaceAddr string) error {
 	// only set the bridge's mac address if the kernel version is > 3.3
 	// before that it was not supported
 	setBridgeMacAddr := err == nil && (kv.Kernel >= 3 && kv.Major >= 3)
-	err = netlink.CreateBridge(d.bridgeName, setBridgeMacAddr)
+	err = netlink.CreateBridge(d.config.BridgeName, setBridgeMacAddr)
 	if err != nil {
 		log.Printf("error to create bridge: %s", err)
 	} else {
-		log.Printf("Created bridge %s", d.bridgeName)
+		log.Printf("Created bridge %s", d.config.BridgeName)
 	}
 
-	iface, err := net.InterfaceByName(d.bridgeName)
+	iface, err := net.InterfaceByName(d.config.BridgeName)
 	if err != nil {
 		return err
 	}
@@ -312,7 +310,7 @@ func (d *Daemon) CreateBridge(ifaceAddr string) error {
 				return nil
 			}
 		}
-		return fmt.Errorf("Wrong addr %v assigned to bridge %s", addrs, d.bridgeName)
+		return fmt.Errorf("Wrong addr %v assigned to bridge %s", addrs, d.config.BridgeName)
 	} else {
 		if netlink.NetworkLinkAddIp(iface, ipAddr, ipNet); err != nil {
 			return fmt.Errorf("Unable to add private network: %s", err)
