@@ -4,7 +4,7 @@ import (
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/zhgwenming/vrouter/netinfo"
-	"github.com/zhgwenming/vrouter/registry"
+	//"github.com/zhgwenming/vrouter/registry"
 	"log"
 	"net"
 	"os"
@@ -72,23 +72,27 @@ func (cmd *Command) InitCmd(servers *string) *cobra.Command {
 
 func (cmd *Command) Run(c *cobra.Command, args []string) {
 	if cmd.daemonMode {
-		daemon := cmd.Daemon
+		//daemon := cmd.Daemon
 		// -peer-addr 127.0.0.1:7001 -addr 127.0.0.1:4001 -data-dir machines/machine1 -name machine1
-		go registry.StartEtcd("-peer-addr", "127.0.0.1:7001", "-addr", "127.0.0.1:4001", "-data-dir", "machines/"+daemon.Hostname, "-name", daemon.Hostname)
+		//go registry.StartEtcd("-peer-addr", "127.0.0.1:7001", "-addr", "127.0.0.1:4001", "-data-dir", "machines/"+daemon.Hostname, "-name", daemon.Hostname)
 
 		servers := strings.Split(*cmd.etcdServers, ",")
 		vrouter := cmd.Daemon
 
 		// start keepalive first
-		if cmd.CaFile != "" && cmd.CertFile != "" && cmd.KeyFile != "" {
+		//if cmd.CaFile != "" && cmd.CertFile != "" && cmd.KeyFile != "" {
+		log.Printf("%v", servers)
+		if strings.HasPrefix(servers[0], "https://") {
 			eclient, err := etcd.NewTLSClient(servers, cmd.CertFile, cmd.KeyFile, cmd.CaFile)
 			if err != nil {
 				log.Fatalf("error to create tls client: %s", err)
 			}
 
+			log.Printf("established tls connection.")
 			vrouter.etcdClient = eclient
 		} else {
 			vrouter.etcdClient = etcd.NewClient(servers)
+			log.Printf("established plain text connection.")
 		}
 		err := vrouter.KeepAlive()
 		if err != nil {

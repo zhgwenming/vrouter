@@ -16,7 +16,7 @@ func main() {
 	cmd := daemon.NewCommand()
 	routerCmd := cmd.InitCmd(&etcdServers)
 
-	routerCmd.PersistentFlags().StringVarP(&etcdServers, "etcd_servers", "e", "http://127.0.0.1:4001", "etcd server uri")
+	routerCmd.PersistentFlags().StringVarP(&etcdServers, "etcd_servers", "e", "https://127.0.0.1:4001", "etcd server uri")
 
 	// cafile/certfile/keyfile
 	routerCmd.PersistentFlags().StringVarP(&cmd.CaFile, "ca_file", "a", "", "etcd server ca file")
