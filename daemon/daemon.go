@@ -277,6 +277,8 @@ func (d *Daemon) BindBridgeIPNet(ifaceip string) (*net.IPNet, error) {
 }
 
 func (d *Daemon) CreateBridge(ifaceAddr string) error {
+	var newBridge bool
+
 	ipAddr, ipNet, err := net.ParseCIDR(ifaceAddr)
 	if err != nil {
 		return err
@@ -291,21 +293,7 @@ func (d *Daemon) CreateBridge(ifaceAddr string) error {
 		log.Printf("error to create bridge: %s", err)
 	} else {
 		log.Printf("Created bridge %s", d.config.BridgeName)
-
-		// bridge/overlay *IPNet
-		bip := d.bridgeIPNet
-		oip := d.overlayIPNet
-
-		// remove the host part in ipaddr
-		bip.IP = bip.IP.Mask(bip.Mask)
-		oip.IP = oip.IP.Mask(oip.Mask)
-
-		bridgeNet := bip.String()
-		overlayNet := oip.String()
-		log.Printf("bip %v oip %v", bip, oip)
-		if err = IptablesMasq(overlayNet, bridgeNet); err != nil {
-			log.Printf("error to create masquerade iptables rule: %s", err)
-		}
+		newBridge = true
 	}
 
 	iface, err := net.InterfaceByName(d.config.BridgeName)
@@ -332,9 +320,25 @@ func (d *Daemon) CreateBridge(ifaceAddr string) error {
 		if err := netlink.NetworkLinkUp(iface); err != nil {
 			return fmt.Errorf("Unable to start network bridge: %s", err)
 		}
-
-		return nil
 	}
+
+	if newBridge {
+		// bridge/overlay *IPNet
+		bip := d.bridgeIPNet
+		oip := d.overlayIPNet
+
+		// remove the host part in ipaddr
+		bip.IP = bip.IP.Mask(bip.Mask)
+		oip.IP = oip.IP.Mask(oip.Mask)
+
+		bridgeNet := bip.String()
+		overlayNet := oip.String()
+		log.Printf("set MASQUERADE with bridgeIP %v overlayIP %v", bip, oip)
+		if err = IptablesMasq(overlayNet, bridgeNet); err != nil {
+			log.Printf("error to create masquerade iptables rule: %s", err)
+		}
+	}
+	return nil
 }
 
 func WritePid(pidfile string) error {
