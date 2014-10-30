@@ -24,6 +24,8 @@ var (
 // register cobra subcommand
 func InitCmd(parent *cobra.Command, client *registry.ClientConfig) {
 
+	etcdConfig = client
+
 	// register new subcommand
 	initCmd := &cobra.Command{
 		Use:   "init <machine1,machine2,..>",
