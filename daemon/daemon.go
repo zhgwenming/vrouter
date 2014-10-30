@@ -19,6 +19,10 @@ import (
 type Daemon struct {
 	etcdClient *etcd.Client
 
+	// tls authentication related
+	CaFile   string
+	CertFile string
+	KeyFile  string
 	// host relate information
 	Hostname string
 

@@ -21,7 +21,7 @@ type Command struct {
 	gatewayMode bool
 
 	// vrouter daemon
-	daemon *Daemon
+	Daemon *Daemon
 }
 
 func NewCommand() *Command {
@@ -31,7 +31,7 @@ func NewCommand() *Command {
 func (cmd *Command) InitCmd(servers *string) *cobra.Command {
 
 	vrouter := NewDaemon()
-	cmd.daemon = vrouter
+	cmd.Daemon = vrouter
 
 	cmd.etcdServers = servers
 
@@ -67,12 +67,12 @@ func (cmd *Command) InitCmd(servers *string) *cobra.Command {
 
 func (cmd *Command) Run(c *cobra.Command, args []string) {
 	if cmd.daemonMode {
-		daemon := cmd.daemon
+		daemon := cmd.Daemon
 		// -peer-addr 127.0.0.1:7001 -addr 127.0.0.1:4001 -data-dir machines/machine1 -name machine1
 		go registry.StartEtcd("-peer-addr", "127.0.0.1:7001", "-addr", "127.0.0.1:4001", "-data-dir", "machines/"+daemon.Hostname, "-name", daemon.Hostname)
 
 		servers := strings.Split(*cmd.etcdServers, ",")
-		vrouter := cmd.daemon
+		vrouter := cmd.Daemon
 
 		// start keepalive first
 		vrouter.etcdClient = etcd.NewClient(servers)
