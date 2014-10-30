@@ -19,10 +19,11 @@ func NewClient(cfg *ClientConfig) *etcd.Client {
 	var client *etcd.Client
 	var err error
 
-	//if cmd.CaFile != "" && cmd.CertFile != "" && cmd.KeyFile != "" {
 	servers := strings.Split(cfg.Servers, ",")
-	log.Printf("%v", servers)
-	if strings.HasPrefix(servers[0], "https://") {
+	log.Printf("etcd client with: %v", servers)
+
+	// cert and key file are needed for tls authentication
+	if cfg.CertFile != "" && cfg.KeyFile != "" {
 		client, err = etcd.NewTLSClient(servers, cfg.CertFile, cfg.KeyFile, cfg.CaFile)
 		if err != nil {
 			log.Fatalf("error to create tls client: %s", err)
