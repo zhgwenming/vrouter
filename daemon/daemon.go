@@ -161,7 +161,6 @@ func (d *Daemon) KeepAlive() error {
 // load IPNet info from config server
 func (d *Daemon) loadIPNet(key string) (*net.IPNet, error) {
 	client := d.etcdClient
-	key = registry.BridgeInfoPath(d.config.Hostname)
 
 	if resp, err := client.Get(key, false, false); err != nil {
 		return nil, err
