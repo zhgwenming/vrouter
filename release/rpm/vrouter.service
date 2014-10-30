@@ -1,0 +1,13 @@
+[Unit]
+Description=vrouter
+Wants=vrouter.service
+After=vrouter.service
+
+[Service]
+ExecStart=/usr/bin/vrouter
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
+
