@@ -20,9 +20,9 @@ func main() {
 	routerCmd.PersistentFlags().StringVarP(&etcdConfig.Servers, "etcd_servers", "e", "https://127.0.0.1:4001", "etcd server uri")
 
 	// cafile/certfile/keyfile
-	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CaFile, "ca_file", "a", "", "etcd server ca file")
-	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CertFile, "cert_file", "t", "", "etcd server cert file")
-	routerCmd.PersistentFlags().StringVarP(&etcdConfig.KeyFile, "key_file", "k", "", "etcd server key file")
+	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CaFile, "ca-file", "a", "", "etcd server ca file")
+	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CertFile, "cert-file", "t", "/etc/vrouter/tls.crt", "etcd server cert file")
+	routerCmd.PersistentFlags().StringVarP(&etcdConfig.KeyFile, "key-file", "k", "/etc/vrouter/tls.key", "etcd server key file")
 
 	controller.InitCmd(routerCmd, etcdConfig)
 
