@@ -234,12 +234,11 @@ func (d *Daemon) updateNodeRoute() error {
 // associate to nic ip address to an allocated IPNet
 func (d *Daemon) BindBridgeIPNet(ifaceip string) (*net.IPNet, error) {
 	var err error
-	var brnet *net.IPNet
 
 	// update daemon information
 	d.iface = netinfo.InterfaceByIPNet(ifaceip)
 	if ip, ipnet, err := net.ParseCIDR(ifaceip); err != nil {
-		return brnet, err
+		return nil, err
 	} else {
 		ipnet.IP = ip
 		d.ifaceIPNet = ipnet
@@ -248,7 +247,7 @@ func (d *Daemon) BindBridgeIPNet(ifaceip string) (*net.IPNet, error) {
 	if d.config.Hostname == "" {
 		d.config.Hostname, err = os.Hostname()
 		if err != nil {
-			return brnet, err
+			return nil, err
 		}
 	}
 
@@ -256,24 +255,26 @@ func (d *Daemon) BindBridgeIPNet(ifaceip string) (*net.IPNet, error) {
 		ifaceip = netinfo.GetFirstIPAddr()
 	}
 
-	// get node IPNet info first
-	if brnet, err = d.getBridgeIPNet(); err != nil {
-		return brnet, err
-	}
-	d.bridgeIPNet = brnet
-
 	// load overlay network information
-	if brnet, err = d.getOverlayIPNet(); err != nil {
-		return brnet, err
+	if ipnet, err := d.getOverlayIPNet(); err != nil {
+		return nil, err
+	} else {
+		d.overlayIPNet = ipnet
 	}
-	d.overlayIPNet = brnet
+
+	// get node IPNet info first
+	if ipnet, err := d.getBridgeIPNet(); err != nil {
+		return nil, err
+	} else {
+		d.bridgeIPNet = ipnet
+	}
 
 	if err = d.updateRouterInterfaceNetIP(ifaceip); err != nil {
-		return brnet, err
+		return nil, err
 	}
 	err = d.updateNodeRoute()
 
-	return brnet, err
+	return d.bridgeIPNet, err
 }
 
 func (d *Daemon) CreateBridge(ifaceAddr string) error {
