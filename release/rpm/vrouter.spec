@@ -1,7 +1,7 @@
 %global debug_package %{nil}
 
 Name:		vrouter
-Version:	0.1
+Version:	0.1.1
 Release:	1%{?dist}
 Summary:	vrouter a general tool for distributed docker networking
 

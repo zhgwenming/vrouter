@@ -1,5 +1,5 @@
 NAME ?= vrouter
-VERSION ?= 0.1
+VERSION ?= 0.1.1
 NV = $(NAME)-v$(VERSION)
 SPEC_FILE := $(NAME).spec
 TARBALL := $(NV).tar.gz
