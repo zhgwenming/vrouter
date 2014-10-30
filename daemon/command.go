@@ -20,6 +20,11 @@ type Command struct {
 	daemonMode  bool
 	gatewayMode bool
 
+	// tls authentication related
+	CaFile   string
+	CertFile string
+	KeyFile  string
+
 	// vrouter daemon
 	Daemon *Daemon
 }

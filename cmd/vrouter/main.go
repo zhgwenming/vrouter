@@ -19,9 +19,9 @@ func main() {
 	routerCmd.PersistentFlags().StringVarP(&etcdServers, "etcd_servers", "e", "http://127.0.0.1:4001", "etcd server uri")
 
 	// cafile/certfile/keyfile
-	routerCmd.PersistentFlags().StringVarP(&cmd.Daemon.CaFile, "ca_file", "a", "", "etcd server ca file")
-	routerCmd.PersistentFlags().StringVarP(&cmd.Daemon.CertFile, "cert_file", "t", "", "etcd server cert file")
-	routerCmd.PersistentFlags().StringVarP(&cmd.Daemon.KeyFile, "key_file", "k", "", "etcd server key file")
+	routerCmd.PersistentFlags().StringVarP(&cmd.CaFile, "ca_file", "a", "", "etcd server ca file")
+	routerCmd.PersistentFlags().StringVarP(&cmd.CertFile, "cert_file", "t", "", "etcd server cert file")
+	routerCmd.PersistentFlags().StringVarP(&cmd.KeyFile, "key_file", "k", "", "etcd server key file")
 
 	controller.InitCmd(routerCmd, &etcdServers)
 
