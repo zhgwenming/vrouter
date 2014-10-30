@@ -30,6 +30,7 @@ make
 
 %install
 install -D -p  build/bin/vrouter %{buildroot}%{_bindir}/vrouter
+install -d -m 600 %{buildroot}%{_sysconfdir}/%{name}
 #install -D -p -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service
 #install -D -p -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/%{name}.socket
 
@@ -44,6 +45,7 @@ install -D -p  build/bin/vrouter %{buildroot}%{_bindir}/vrouter
 
 %files
 %{_bindir}/vrouter
+%{_sysconfdir}/%{name}
 #%{_unitdir}/%{name}.service
 #%{_unitdir}/%{name}.socket
 %doc README.md
