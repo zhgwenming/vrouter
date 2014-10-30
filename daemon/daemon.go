@@ -292,6 +292,16 @@ func (d *Daemon) CreateBridge(ifaceAddr string) error {
 		log.Printf("error to create bridge: %s", err)
 	} else {
 		log.Printf("Created bridge %s", d.config.BridgeName)
+
+		// bridge/overlay *IPNet
+		bip := d.bridgeIPNet
+		oip := d.overlayIPNet
+
+		bridgeNet := bip.IP.Mask(bip.Mask).String()
+		overlayNet := oip.IP.Mask(oip.Mask).String()
+		if err = IptablesMasq(overlayNet, bridgeNet); err != nil {
+			log.Printf("error to create masquerade iptables rule: %s", err)
+		}
 	}
 
 	iface, err := net.InterfaceByName(d.config.BridgeName)
