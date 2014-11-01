@@ -24,8 +24,8 @@ func ParseRoute(str string) (*Route, error) {
 	return &Route{target: r[0], gateway: r[1]}, nil
 }
 
-func (r *Route) AddRoute(iface *net.Interface) error {
-	return netlink.AddRoute(r.target, "", r.gateway, iface.Name)
+func (r *Route) AddRoute(src string, iface *net.Interface) error {
+	return netlink.AddRoute(r.target, src, r.gateway, iface.Name)
 }
 
 func (r *Route) String() string {
