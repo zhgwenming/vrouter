@@ -75,7 +75,7 @@ func (d *Daemon) ManageRoute() error {
 
 	for _, r := range routes {
 		// use the bridge ip as the source ip
-		err = r.AddRoute(d.bridgeIPNet.String(), d.iface)
+		err = r.AddRoute(d.bridgeIPNet.IP.String(), d.iface)
 		if err != nil {
 			log.Printf("error to add route: %s", err)
 		}
