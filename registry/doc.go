@@ -31,5 +31,4 @@
 //     │     ├── serviceN
 //     │     ├── ...
 //     │
-
 package registry
