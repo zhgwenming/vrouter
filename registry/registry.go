@@ -23,7 +23,7 @@ func RouterRoutesPrefix() string {
 }
 
 func NodeActivePath(node string) string {
-	return REGISTRY_PREFIX + "/" + "members" + node
+	return REGISTRY_PREFIX + "/" + "members" + "/" + node
 }
 
 func RouterOverlayPath() string {
