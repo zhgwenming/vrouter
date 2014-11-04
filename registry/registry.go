@@ -17,11 +17,24 @@ import (
 //     │     ├── hostnameN
 //     │     │     ├── ...
 //     │
+//     ├── members
+//     │     ├── member1
+//     │     ├── ...
+//     │     ├── memberN
+//     │     ├── ...
+//     │
 //     ├── routes
 //     │     ├── hostname1
 //     │     ├── ...
 //     │     ├── hostnameN
-
+//     │     ├── ...
+//     │
+//     ├── services
+//     │     ├── service1
+//     │     ├── ...
+//     │     ├── serviceN
+//     │     ├── ...
+//     │
 type Registry struct {
 	etcdClient *etcd.Client
 }
@@ -39,6 +52,10 @@ func RouterRoutesPrefix() string {
 	return REGISTRY_PREFIX + "/" + "routes"
 }
 
+func NodeActivePath(node string) string {
+	return REGISTRY_PREFIX + "/" + "members" + node
+}
+
 func RouterOverlayPath() string {
 	return REGISTRY_PREFIX + "/" + "ipnet_overlay"
 }
@@ -49,10 +66,6 @@ func IfaceInfoPath(node string) string {
 
 func BridgeInfoPath(node string) string {
 	return RouterHostsPrefix() + "/" + node + "/" + "bridgeinfo"
-}
-
-func NodeActivePath(node string) string {
-	return RouterHostsPrefix() + "/" + node + "/" + "active"
 }
 
 func NodeRoutePath(node string) string {
