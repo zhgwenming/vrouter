@@ -20,8 +20,7 @@ var (
 	etcdClient    *etcd.Client
 )
 
-// create etcd client
-// register cobra subcommand
+// InitCmd creates etcd client and register cobra subcommand
 func InitCmd(parent *cobra.Command, client *registry.ClientConfig) {
 
 	etcdConfig = client
