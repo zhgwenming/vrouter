@@ -33,10 +33,10 @@ func (s *Service) Marshal() []byte {
 	return buf.Bytes()
 }
 
-func (s *Service) UnMarshal(buf []byte) {
+func (s *Service) UnMarshal(buf []byte) error {
 	buffer := bytes.NewBuffer(buf)
 	decoder := gob.NewDecoder(buffer)
-	decoder.Decode(s)
+	return decoder.Decode(s)
 }
 
 type LBProxy struct {
