@@ -32,4 +32,19 @@ func (c *Command) CellInit(parent *cobra.Command) {
 }
 
 func (c *Command) Service(parent *cobra.Command) {
+	srv := new(Service)
+	srv.cmd = c
+	// new subcommand
+	cmd := &cobra.Command{
+		Use:   "service",
+		Short: "service controller",
+		Long:  "",
+		Run:   srv.Run,
+	}
+
+	cmd.Flags().StringVarP(&srv.Name, "name", "n", srv.Name, "service name")
+	cmd.Flags().StringVarP(&srv.Addr, "listen", "l", srv.Addr, "service listen address")
+	cmd.Flags().StringVarP(&srv.Port, "port", "p", srv.Port, "service port")
+
+	parent.AddCommand(cmd)
 }

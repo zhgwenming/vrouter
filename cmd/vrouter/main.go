@@ -25,11 +25,11 @@ func main() {
 	}
 
 	// cafile/certfile/keyfile
-	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CaFile, "ca-file", "a", "", "etcd server ca file")
-	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CertFile, "cert-file", "t", "/etc/vrouter/"+tlsName+".crt", "etcd server cert file")
-	routerCmd.PersistentFlags().StringVarP(&etcdConfig.KeyFile, "key-file", "k", "/etc/vrouter/"+tlsName+".key", "etcd server key file")
+	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CaFile, "ca-file", "", "", "etcd server ca file")
+	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CertFile, "cert-file", "", "/etc/vrouter/"+tlsName+".crt", "etcd server cert file")
+	routerCmd.PersistentFlags().StringVarP(&etcdConfig.KeyFile, "key-file", "", "/etc/vrouter/"+tlsName+".key", "etcd server key file")
 
-	controller.InitCmd(routerCmd, etcdConfig)
+	controller.AddSubCommands(routerCmd, etcdConfig)
 
 	if err := routerCmd.Execute(); err != nil {
 		log.Fatal(err)
