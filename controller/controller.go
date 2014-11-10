@@ -20,25 +20,6 @@ var (
 	etcdClient    *etcd.Client
 )
 
-// InitCmd creates etcd client and register cobra subcommand
-func InitCmd(parent *cobra.Command, client *registry.ClientConfig) {
-
-	etcdConfig = client
-
-	// register new subcommand
-	initCmd := &cobra.Command{
-		Use:   "init <machine1,machine2,..>",
-		Short: "init the machine registry",
-		Long:  "init the machine registry with specific ip network information",
-		Run:   registryInit,
-	}
-
-	initCmd.Flags().StringVarP(&cellSubnet, "cellnet", "c", registry.DEFAULT_SUBNET, "cell cidr subnet ip address")
-	initCmd.Flags().StringVarP(&overlaySubnet, "overlay", "o", registry.DEFAULT_SUBNET, "the whole overlay subnet ip address")
-
-	parent.AddCommand(initCmd)
-}
-
 func registryInit(cmd *cobra.Command, args []string) {
 
 	etcdClient = registry.NewClient(etcdConfig)
