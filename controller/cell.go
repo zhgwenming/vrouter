@@ -12,7 +12,7 @@ import (
 )
 
 type Cell struct {
-	cmd           *Command
+	config        *Config
 	machines      string
 	hostNames     []string
 	cellSubnet    string
@@ -22,7 +22,7 @@ type Cell struct {
 
 func (n *Cell) registryInit(cmd *cobra.Command, args []string) {
 
-	n.etcdClient = registry.NewClient(n.cmd.etcdConfig)
+	n.etcdClient = registry.NewClient(n.config.etcdConfig)
 
 	if len(args) > 0 {
 		n.machines = args[0]

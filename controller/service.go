@@ -11,7 +11,7 @@ import (
 
 type ServiceManager struct {
 	service.Service
-	cmd        *Command
+	cmd        *Config
 	etcdClient *etcd.Client
 }
 
