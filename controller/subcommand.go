@@ -6,8 +6,8 @@ import (
 	"reflect"
 )
 
-// InitCmd creates etcd client and register cobra subcommand
-func InitCmd(parent *cobra.Command, client *registry.ClientConfig) {
+// AddSubCommands creates etcd client and register cobra subcommand
+func AddSubCommands(parent *cobra.Command, client *registry.ClientConfig) {
 	c := NewCli(client)
 
 	v := reflect.ValueOf(c)
