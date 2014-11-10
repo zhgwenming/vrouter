@@ -32,19 +32,19 @@ func (c *Config) CellInit(parent *cobra.Command) {
 }
 
 func (c *Config) Service(parent *cobra.Command) {
-	srv := new(ServiceManager)
-	srv.config = c
+	manager := new(ServiceManager)
+	manager.config = c
 	// new subcommand
 	cmd := &cobra.Command{
 		Use:   "service [list|add|delete]",
 		Short: "service management",
-		Long:  "",
-		Run:   srv.Run,
+		Long:  "manage the distributed network services",
+		Run:   manager.Run,
 	}
 
-	cmd.Flags().StringVarP(&srv.Name, "name", "n", "", "service name")
-	cmd.Flags().StringVarP(&srv.Addr, "listen", "l", "", "service listen address")
-	cmd.Flags().StringVarP(&srv.Port, "port", "p", "", "service port")
+	cmd.Flags().StringVarP(&manager.service.Name, "name", "n", "", "service name")
+	cmd.Flags().StringVarP(&manager.service.Addr, "listen", "l", "", "service listen address")
+	cmd.Flags().StringVarP(&manager.service.Port, "port", "p", "", "service port")
 
 	parent.AddCommand(cmd)
 }

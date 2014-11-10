@@ -10,7 +10,7 @@ import (
 )
 
 type ServiceManager struct {
-	service.Service
+	service    service.Service
 	config     *Config
 	etcdClient *etcd.Client
 }
@@ -45,32 +45,32 @@ func (srv *ServiceManager) Run(cmd *cobra.Command, args []string) {
 
 }
 
-func (srv *ServiceManager) Add() error {
-	if srv.Name == "" {
+func (mgr *ServiceManager) Add() error {
+	if mgr.service.Name == "" {
 		return fmt.Errorf("No service name specified")
 	}
 
-	key := registry.RouterServicesPrefix() + "/" + srv.Name
-	value := string(srv.Marshal())
-	if _, err := srv.etcdClient.Create(key, value, uint64(0)); err != nil {
+	key := registry.RouterServicesPrefix() + "/" + mgr.service.Name
+	value := string(mgr.service.Marshal())
+	if _, err := mgr.etcdClient.Create(key, value, uint64(0)); err != nil {
 		return err
 	}
-	fmt.Printf("service %s added\n", srv.Name)
+	fmt.Printf("service %s added\n", mgr.service.Name)
 
 	return nil
 }
 
-func (srv *ServiceManager) Delete() error {
-	if srv.Name == "" {
+func (mgr *ServiceManager) Delete() error {
+	if mgr.service.Name == "" {
 		return fmt.Errorf("No service name specified")
 	}
 
-	key := registry.RouterServicesPrefix() + "/" + srv.Name
-	if _, err := srv.etcdClient.Delete(key, true); err != nil {
+	key := registry.RouterServicesPrefix() + "/" + mgr.service.Name
+	if _, err := mgr.etcdClient.Delete(key, true); err != nil {
 		return err
 	}
 
-	fmt.Printf("service %s deleted\n", srv.Name)
+	fmt.Printf("service %s deleted\n", mgr.service.Name)
 	return nil
 }
 
