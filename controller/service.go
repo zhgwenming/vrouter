@@ -11,14 +11,14 @@ import (
 
 type ServiceManager struct {
 	service.Service
-	cmd        *Config
+	config     *Config
 	etcdClient *etcd.Client
 }
 
 func (srv *ServiceManager) Run(cmd *cobra.Command, args []string) {
 	var action string
 
-	srv.etcdClient = registry.NewClient(srv.cmd.etcdConfig)
+	srv.etcdClient = registry.NewClient(srv.config.etcdConfig)
 
 	if len(args) > 0 {
 		var err error

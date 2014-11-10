@@ -33,7 +33,7 @@ func (c *Config) CellInit(parent *cobra.Command) {
 
 func (c *Config) Service(parent *cobra.Command) {
 	srv := new(ServiceManager)
-	srv.cmd = c
+	srv.config = c
 	// new subcommand
 	cmd := &cobra.Command{
 		Use:   "service [add|delete]",
