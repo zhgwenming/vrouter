@@ -5,24 +5,25 @@ import (
 	"encoding/gob"
 )
 
-// Service Instance
-type Instance struct {
+// Service Backend
+type Backend struct {
 	Addr string
 	Port string
 }
 
 // A TCP service will publish to outer network
 type Service struct {
-	Name    string
-	Addr    string
-	Port    string
-	Targets []*Instance
+	Name     string
+	Host     string
+	Addr     string
+	Port     string
+	Backends []*Backend
 }
 
 func NewService() *Service {
 	srv := new(Service)
-	tgt := make([]*Instance, 0, 4)
-	srv.Targets = tgt
+	tgt := make([]*Backend, 0, 4)
+	srv.Backends = tgt
 	return srv
 }
 

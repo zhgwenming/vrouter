@@ -11,11 +11,11 @@ func TestEncodeDecode(t *testing.T) {
 	orig.Addr = "127.0.0.1"
 	orig.Port = "80"
 
-	inst := new(Instance)
+	inst := new(Backend)
 	inst.Addr = "172.16.1.1"
 	inst.Port = "9199"
 
-	orig.Targets = append(orig.Targets, inst)
+	orig.Backends = append(orig.Backends, inst)
 	buf := orig.Marshal()
 
 	dec := NewService()
