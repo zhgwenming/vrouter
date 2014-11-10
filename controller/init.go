@@ -8,8 +8,7 @@ import (
 
 // InitCmd creates etcd client and register cobra subcommand
 func InitCmd(parent *cobra.Command, client *registry.ClientConfig) {
-	etcdConfig = client
-	c := new(cli)
+	c := NewCli(client)
 
 	v := reflect.ValueOf(c)
 	for i := 0; i < v.NumMethod(); i++ {

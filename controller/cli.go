@@ -5,21 +5,30 @@ import (
 	"github.com/zhgwenming/vrouter/registry"
 )
 
-type cli struct{}
+type cli struct {
+	etcdConfig *registry.ClientConfig
+}
 
-func (c *cli) Init(parent *cobra.Command) {
+func NewCli(cfg *registry.ClientConfig) *cli {
+	c := &cli{cfg}
+	return c
+}
+
+func (c *cli) CellInit(parent *cobra.Command) {
+	cell := new(Cell)
+	cell.cli = c
 	// new subcommand
-	initCmd := &cobra.Command{
-		Use:   "init <machine1,machine2,..>",
-		Short: "init the machine registry",
+	cmd := &cobra.Command{
+		Use:   "cell-init <machine1,machine2,..>",
+		Short: "cell-init the machine registry",
 		Long:  "init the machine registry with specific ip network information",
-		Run:   registryInit,
+		Run:   cell.registryInit,
 	}
 
-	initCmd.Flags().StringVarP(&cellSubnet, "cellnet", "c", registry.DEFAULT_SUBNET, "cell cidr subnet ip address")
-	initCmd.Flags().StringVarP(&overlaySubnet, "overlay", "o", registry.DEFAULT_SUBNET, "the whole overlay subnet ip address")
+	cmd.Flags().StringVarP(&cell.cellSubnet, "cellnet", "c", registry.DEFAULT_SUBNET, "cell cidr subnet ip address")
+	cmd.Flags().StringVarP(&cell.overlaySubnet, "overlay", "o", registry.DEFAULT_SUBNET, "the whole overlay subnet ip address")
 
-	parent.AddCommand(initCmd)
+	parent.AddCommand(cmd)
 }
 
 func (c *cli) Service(parent *cobra.Command) {
