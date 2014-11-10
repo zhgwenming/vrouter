@@ -3,7 +3,10 @@ package service
 import (
 	"bytes"
 	"encoding/gob"
+	"errors"
 )
+
+var ErrNotImplemented = errors.New("Function not implemented")
 
 // Service Backend
 type Backend struct {
@@ -38,6 +41,29 @@ func (s *Service) UnMarshal(buf []byte) error {
 	buffer := bytes.NewBuffer(buf)
 	decoder := gob.NewDecoder(buffer)
 	return decoder.Decode(s)
+}
+
+// BindIP binds the Addr to a physical interface
+func (s *Service) bindIP() error {
+	return ErrNotImplemented
+}
+
+func (s *Service) Start() error {
+	if err := s.bindIP(); err != nil {
+		return err
+	}
+	return ErrNotImplemented
+}
+
+func (s *Service) removeIP() error {
+	return ErrNotImplemented
+}
+
+func (s *Service) Stop() error {
+	if err := s.removeIP(); err != nil {
+		return err
+	}
+	return ErrNotImplemented
 }
 
 type LBProxy struct {
