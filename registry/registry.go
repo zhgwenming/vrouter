@@ -22,6 +22,10 @@ func RouterRoutesPrefix() string {
 	return REGISTRY_PREFIX + "/" + "routes"
 }
 
+func RouterServicesPrefix() string {
+	return REGISTRY_PREFIX + "/" + "services"
+}
+
 func NodeActivePath(node string) string {
 	return REGISTRY_PREFIX + "/" + "members" + "/" + node
 }

@@ -36,8 +36,8 @@ func (c *Command) Service(parent *cobra.Command) {
 	srv.cmd = c
 	// new subcommand
 	cmd := &cobra.Command{
-		Use:   "service",
-		Short: "service controller",
+		Use:   "service [add|delete]",
+		Short: "service management",
 		Long:  "",
 		Run:   srv.Run,
 	}

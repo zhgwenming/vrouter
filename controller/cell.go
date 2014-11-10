@@ -12,12 +12,12 @@ import (
 )
 
 type Cell struct {
+	cmd           *Command
 	machines      string
 	hostNames     []string
 	cellSubnet    string
 	overlaySubnet string
 	etcdClient    *etcd.Client
-	cmd           *Command
 }
 
 func (n *Cell) registryInit(cmd *cobra.Command, args []string) {
