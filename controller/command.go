@@ -42,9 +42,9 @@ func (c *Config) Service(parent *cobra.Command) {
 		Run:   srv.Run,
 	}
 
-	cmd.Flags().StringVarP(&srv.Name, "name", "n", srv.Name, "service name")
-	cmd.Flags().StringVarP(&srv.Addr, "listen", "l", srv.Addr, "service listen address")
-	cmd.Flags().StringVarP(&srv.Port, "port", "p", srv.Port, "service port")
+	cmd.Flags().StringVarP(&srv.Name, "name", "n", "", "service name")
+	cmd.Flags().StringVarP(&srv.Addr, "listen", "l", "", "service listen address")
+	cmd.Flags().StringVarP(&srv.Port, "port", "p", "", "service port")
 
 	parent.AddCommand(cmd)
 }
