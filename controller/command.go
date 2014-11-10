@@ -32,7 +32,7 @@ func (c *Command) CellInit(parent *cobra.Command) {
 }
 
 func (c *Command) Service(parent *cobra.Command) {
-	srv := new(Service)
+	srv := new(ServiceManager)
 	srv.cmd = c
 	// new subcommand
 	cmd := &cobra.Command{

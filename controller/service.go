@@ -9,13 +9,13 @@ import (
 	"log"
 )
 
-type Service struct {
+type ServiceManager struct {
 	service.Service
 	cmd        *Command
 	etcdClient *etcd.Client
 }
 
-func (srv *Service) Run(cmd *cobra.Command, args []string) {
+func (srv *ServiceManager) Run(cmd *cobra.Command, args []string) {
 	var action string
 
 	srv.etcdClient = registry.NewClient(srv.cmd.etcdConfig)
@@ -43,7 +43,7 @@ func (srv *Service) Run(cmd *cobra.Command, args []string) {
 
 }
 
-func (srv *Service) Add() error {
+func (srv *ServiceManager) Add() error {
 	if srv.Name == "" {
 		return fmt.Errorf("No service name specified")
 	}
@@ -58,7 +58,7 @@ func (srv *Service) Add() error {
 	return nil
 }
 
-func (srv *Service) Delete() error {
+func (srv *ServiceManager) Delete() error {
 	if srv.Name == "" {
 		return fmt.Errorf("No service name specified")
 	}
@@ -67,6 +67,6 @@ func (srv *Service) Delete() error {
 	return nil
 }
 
-func (srv *Service) Get() {
+func (srv *ServiceManager) Get() {
 	fmt.Printf("Get\n")
 }
