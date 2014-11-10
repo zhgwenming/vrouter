@@ -29,6 +29,8 @@ func (srv *ServiceManager) Run(cmd *cobra.Command, args []string) {
 			err = srv.Add()
 		case "delete":
 			err = srv.Delete()
+		case "list":
+			err = srv.List()
 		default:
 			cmd.Usage()
 		}
@@ -63,10 +65,17 @@ func (srv *ServiceManager) Delete() error {
 		return fmt.Errorf("No service name specified")
 	}
 
+	key := registry.RouterServicesPrefix() + "/" + srv.Name
+	if _, err := srv.etcdClient.Delete(key, true); err != nil {
+		return err
+	}
+
 	fmt.Printf("service %s deleted\n", srv.Name)
 	return nil
 }
 
-func (srv *ServiceManager) Get() {
-	fmt.Printf("Get\n")
+func (srv *ServiceManager) List() error {
+	fmt.Printf("List services\n")
+
+	return nil
 }

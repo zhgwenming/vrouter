@@ -36,7 +36,7 @@ func (c *Config) Service(parent *cobra.Command) {
 	srv.config = c
 	// new subcommand
 	cmd := &cobra.Command{
-		Use:   "service [add|delete]",
+		Use:   "service [list|add|delete]",
 		Short: "service management",
 		Long:  "",
 		Run:   srv.Run,
