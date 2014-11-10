@@ -14,8 +14,8 @@ type Backend struct {
 // A TCP service will publish to outer network
 type Service struct {
 	Name     string
-	Host     string
-	Addr     string
+	Host     string // to be scheduled on
+	Addr     string // VIP or local address
 	Port     string
 	Backends []*Backend
 }
