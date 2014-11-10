@@ -17,12 +17,12 @@ type Cell struct {
 	cellSubnet    string
 	overlaySubnet string
 	etcdClient    *etcd.Client
-	cli           *cli
+	cmd           *Command
 }
 
 func (n *Cell) registryInit(cmd *cobra.Command, args []string) {
 
-	n.etcdClient = registry.NewClient(n.cli.etcdConfig)
+	n.etcdClient = registry.NewClient(n.cmd.etcdConfig)
 
 	if len(args) > 0 {
 		n.machines = args[0]

@@ -5,18 +5,18 @@ import (
 	"github.com/zhgwenming/vrouter/registry"
 )
 
-type cli struct {
+type Command struct {
 	etcdConfig *registry.ClientConfig
 }
 
-func NewCli(cfg *registry.ClientConfig) *cli {
-	c := &cli{cfg}
+func NewCommand(cfg *registry.ClientConfig) *Command {
+	c := &Command{cfg}
 	return c
 }
 
-func (c *cli) CellInit(parent *cobra.Command) {
+func (c *Command) CellInit(parent *cobra.Command) {
 	cell := new(Cell)
-	cell.cli = c
+	cell.cmd = c
 	// new subcommand
 	cmd := &cobra.Command{
 		Use:   "cell-init <machine1,machine2,..>",
@@ -31,5 +31,5 @@ func (c *cli) CellInit(parent *cobra.Command) {
 	parent.AddCommand(cmd)
 }
 
-func (c *cli) Service(parent *cobra.Command) {
+func (c *Command) Service(parent *cobra.Command) {
 }
