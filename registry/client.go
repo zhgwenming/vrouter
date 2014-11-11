@@ -8,6 +8,7 @@ import (
 
 type ClientConfig struct {
 	Servers string
+	Verbose bool
 
 	// tls authentication related
 	CaFile   string
@@ -20,7 +21,9 @@ func NewClient(cfg *ClientConfig) *etcd.Client {
 	var err error
 
 	servers := strings.Split(cfg.Servers, ",")
-	log.Printf("etcd client with: %v", servers)
+	if cfg.Verbose {
+		log.Printf("etcd client with: %v", servers)
+	}
 
 	// cert and key file are needed for tls authentication
 	if cfg.CertFile != "" && cfg.KeyFile != "" {
@@ -29,11 +32,17 @@ func NewClient(cfg *ClientConfig) *etcd.Client {
 			log.Fatalf("error to create tls client: %s", err)
 		}
 
-		log.Printf("established tls connection.")
+		if cfg.Verbose {
+			log.Printf("established tls connection.")
+		}
 	} else {
 		client = etcd.NewClient(servers)
-		log.Printf("established plain text connection.")
+		if cfg.Verbose {
+			log.Printf("established plain text connection.")
+		}
 	}
-	log.Printf("Created new etcd client")
+	if cfg.Verbose {
+		log.Printf("Created new etcd client")
+	}
 	return client
 }

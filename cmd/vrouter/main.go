@@ -56,6 +56,9 @@ func main() {
 	routerCmd.PersistentFlags().StringVarP(&etcdConfig.CertFile, "cert-file", "", certFile, "etcd server cert file")
 	routerCmd.PersistentFlags().StringVarP(&etcdConfig.KeyFile, "key-file", "", keyFile, "etcd server key file")
 
+	// log verbose
+	routerCmd.PersistentFlags().BoolVarP(&etcdConfig.Verbose, "verbose", "", false, "log verbose info")
+
 	controller.AddSubCommands(routerCmd, etcdConfig)
 
 	if err := routerCmd.Execute(); err != nil {
