@@ -15,10 +15,10 @@ type ServiceManager struct {
 	etcdClient *etcd.Client
 }
 
-func (srv *ServiceManager) Run(cmd *cobra.Command, args []string) {
+func (mgr *ServiceManager) Run(cmd *cobra.Command, args []string) {
 	var action string
 
-	srv.etcdClient = registry.NewClient(srv.config.etcdConfig)
+	mgr.etcdClient = registry.NewClient(mgr.config.etcdConfig)
 
 	if len(args) > 0 {
 		var err error
@@ -26,11 +26,11 @@ func (srv *ServiceManager) Run(cmd *cobra.Command, args []string) {
 		// all the actions
 		switch action {
 		case "add":
-			err = srv.Add()
+			err = mgr.Add()
 		case "delete":
-			err = srv.Delete()
+			err = mgr.Delete()
 		case "list":
-			err = srv.List()
+			err = mgr.List()
 		default:
 			cmd.Usage()
 		}
@@ -74,7 +74,7 @@ func (mgr *ServiceManager) Delete() error {
 	return nil
 }
 
-func (srv *ServiceManager) List() error {
+func (mgr *ServiceManager) List() error {
 	fmt.Printf("List services\n")
 
 	return nil
