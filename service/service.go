@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/gob"
 	"errors"
 	"fmt"
@@ -53,11 +54,21 @@ func (s *Service) Marshal() []byte {
 	buf := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buf)
 	encoder.Encode(s)
-	return buf.Bytes()
+
+	src := buf.Bytes()
+
+	ascii := make([]byte, base64.StdEncoding.EncodedLen(len(src)))
+	base64.StdEncoding.Encode(ascii, src)
+	return ascii
 }
 
 func (s *Service) UnMarshal(str string) error {
-	reader := strings.NewReader(str)
+	src, err := base64.StdEncoding.DecodeString(str)
+	if err != nil {
+		return err
+	}
+
+	reader := bytes.NewReader(src)
 	decoder := gob.NewDecoder(reader)
 	return decoder.Decode(s)
 }
