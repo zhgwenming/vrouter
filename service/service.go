@@ -31,6 +31,7 @@ func NewBackend(str string) (*Backend, error) {
 // A TCP service will publish to outer network
 type Service struct {
 	Name     string
+	Active   bool
 	Host     string // to be scheduled on
 	Addr     string // VIP or local address
 	Port     string

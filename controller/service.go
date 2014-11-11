@@ -71,6 +71,7 @@ func (mgr *ServiceManager) Add() error {
 
 	srv.Addr = listen[0]
 	srv.Port = listen[1]
+	srv.Active = true
 
 	for _, backend := range strings.Fields(mgr.srvConfig.BackEnds) {
 		if b, err := service.NewBackend(backend); err == nil {
