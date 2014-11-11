@@ -43,9 +43,8 @@ func (c *Config) Service(parent *cobra.Command) {
 	}
 
 	cmd.Flags().StringVarP(&manager.srvConfig.Name, "name", "n", "", "service name")
-	cmd.Flags().StringVarP(&manager.srvConfig.Addr, "listen", "l", "", "service listen address")
-	cmd.Flags().StringVarP(&manager.srvConfig.Port, "port", "p", "", "service port")
-	cmd.Flags().StringVarP(&manager.srvConfig.BackEnds, "backend", "b", "", "'ip1:port1 ip2:port2' form of backends")
+	cmd.Flags().StringVarP(&manager.srvConfig.Listen, "listen", "l", "", "ip:port form of service listen address")
+	cmd.Flags().StringVarP(&manager.srvConfig.BackEnds, "backends", "b", "", "'ip1:port1 ip2:port2' form of backends")
 
 	parent.AddCommand(cmd)
 }

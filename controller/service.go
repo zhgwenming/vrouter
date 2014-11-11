@@ -12,8 +12,7 @@ import (
 
 type ServiceConfig struct {
 	Name     string
-	Addr     string
-	Port     string
+	Listen   string
 	BackEnds string
 }
 
@@ -63,7 +62,15 @@ func (mgr *ServiceManager) Add() error {
 
 	srv := service.NewService()
 	srv.Name = mgr.srvConfig.Name
-	srv.Addr = mgr.srvConfig.Port
+
+	// listen addr/port
+	listen := strings.Split(mgr.srvConfig.Listen, ":")
+	if len(listen) != 2 {
+		return fmt.Errorf("error format of listen: %s, should be ip:port form")
+	}
+
+	srv.Addr = listen[0]
+	srv.Port = listen[1]
 
 	for _, backend := range strings.Fields(mgr.srvConfig.BackEnds) {
 		if b, err := service.NewBackend(backend); err == nil {
