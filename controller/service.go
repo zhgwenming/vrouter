@@ -153,3 +153,27 @@ func (mgr *ServiceManager) List() error {
 
 	return nil
 }
+
+// Schedule assign a active service a active host
+func (mgr *ServiceManager) Schedule() {
+	key := registry.RouterServicesPrefix()
+	resp, err := mgr.etcdClient.Get(key, true, true)
+	if err != nil {
+		log.Fatalf("error: %s", err)
+	}
+
+	nodes := resp.Node.Nodes
+	//index := resp.EtcdIndex
+
+	length := len(nodes)
+	services := make([]service.Service, length)
+	for i, n := range nodes {
+		value := n.Value
+
+		services[i].UnMarshal(value)
+	}
+}
+
+// ServeNode would run the actuall service on all the slave nodes
+func (mgr *ServiceManager) ServeNode(node string) {
+}
