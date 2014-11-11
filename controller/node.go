@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-type Cell struct {
+type NodeManager struct {
 	config        *Config
 	machines      string
 	hostNames     []string
@@ -20,7 +20,7 @@ type Cell struct {
 	etcdClient    *etcd.Client
 }
 
-func (n *Cell) registryInit(cmd *cobra.Command, args []string) {
+func (n *NodeManager) registryInit(cmd *cobra.Command, args []string) {
 
 	n.etcdClient = registry.NewClient(n.config.etcdConfig)
 
