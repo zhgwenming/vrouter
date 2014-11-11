@@ -111,7 +111,7 @@ func (mgr *ServiceManager) Delete() error {
 }
 
 func (mgr *ServiceManager) List() error {
-	fmt.Printf("List services:\n")
+	fmt.Printf("list services:\n")
 
 	key := registry.RouterServicesPrefix()
 	resp, err := mgr.etcdClient.Get(key, true, true)
@@ -134,7 +134,7 @@ func (mgr *ServiceManager) List() error {
 
 	// Format in tab-separated columns with a tab stop of 8.
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
-	fmt.Fprintln(w, "ADDRESS PORT\tCREATED TIME\tACTIVE\tSERVICE NAME\tBACKENDS")
+	fmt.Fprintln(w, "NAME\tADDRESS PORT\tCREATED TIME\tACTIVE\tBACKENDS\t")
 
 	for _, s := range services {
 		var status string
@@ -143,7 +143,10 @@ func (mgr *ServiceManager) List() error {
 		} else {
 			status = "no "
 		}
-		fmt.Fprintf(w, "%s:%s\t%s\t%s\t%s\n", s.Addr, s.Port, s.CreateTime.Local().Format("2006-01-01 15:04:05"), status, s.Name)
+		fmt.Fprintf(w, "%s\t%s:%s\t"+"%s\t"+"%s\t%s\n",
+			s.Name, s.Addr, s.Port,
+			s.CreateTime.Local().Format("2006-01-01 15:04:05"),
+			status, s.Backends)
 	}
 	fmt.Fprintln(w)
 	w.Flush()

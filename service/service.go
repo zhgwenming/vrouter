@@ -30,6 +30,10 @@ func NewBackend(str string) (*Backend, error) {
 	return &Backend{host, port}, nil
 }
 
+func (back *Backend) String() string {
+	return back.Addr + ":" + back.Port
+}
+
 // A TCP service will publish to outer network
 type Service struct {
 	Name       string
