@@ -20,7 +20,7 @@ func (c *Config) CellInit(parent *cobra.Command) {
 	// new subcommand
 	cmd := &cobra.Command{
 		Use:   "node [init|...] <machine1,machine2,..>",
-		Short: "node subnet info",
+		Short: "subnets management",
 		Long:  "manage the node ip network related information",
 		Run:   manager.registryInit,
 	}
