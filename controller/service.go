@@ -7,11 +7,20 @@ import (
 	"github.com/zhgwenming/vrouter/registry"
 	"github.com/zhgwenming/vrouter/service"
 	"log"
+	"strings"
 )
 
+type ServiceConfig struct {
+	Name     string
+	Addr     string
+	Port     string
+	BackEnds string
+}
+
 type ServiceManager struct {
-	service    service.Service
-	config     *Config
+	srvConfig ServiceConfig
+	config    *Config
+
 	etcdClient *etcd.Client
 }
 
@@ -46,31 +55,44 @@ func (mgr *ServiceManager) Run(cmd *cobra.Command, args []string) {
 }
 
 func (mgr *ServiceManager) Add() error {
-	if mgr.service.Name == "" {
+	if mgr.srvConfig.Name == "" {
 		return fmt.Errorf("No service name specified")
 	}
 
-	key := registry.RouterServicesPrefix() + "/" + mgr.service.Name
-	value := string(mgr.service.Marshal())
+	key := registry.RouterServicesPrefix() + "/" + mgr.srvConfig.Name
+
+	srv := service.NewService()
+	srv.Name = mgr.srvConfig.Name
+	srv.Addr = mgr.srvConfig.Port
+
+	for _, backend := range strings.Fields(mgr.srvConfig.BackEnds) {
+		if b, err := service.NewBackend(backend); err == nil {
+			srv.AddBackend(b)
+		} else {
+			return err
+		}
+	}
+
+	value := string(srv.Marshal())
 	if _, err := mgr.etcdClient.Create(key, value, uint64(0)); err != nil {
 		return err
 	}
-	fmt.Printf("service %s added\n", mgr.service.Name)
+	fmt.Printf("service %s added\n", mgr.srvConfig.Name)
 
 	return nil
 }
 
 func (mgr *ServiceManager) Delete() error {
-	if mgr.service.Name == "" {
+	if mgr.srvConfig.Name == "" {
 		return fmt.Errorf("No service name specified")
 	}
 
-	key := registry.RouterServicesPrefix() + "/" + mgr.service.Name
+	key := registry.RouterServicesPrefix() + "/" + mgr.srvConfig.Name
 	if _, err := mgr.etcdClient.Delete(key, true); err != nil {
 		return err
 	}
 
-	fmt.Printf("service %s deleted\n", mgr.service.Name)
+	fmt.Printf("service %s deleted\n", mgr.srvConfig.Name)
 	return nil
 }
 

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/gob"
 	"errors"
+	"fmt"
+	"strings"
 )
 
 var ErrNotImplemented = errors.New("Function not implemented")
@@ -12,6 +14,18 @@ var ErrNotImplemented = errors.New("Function not implemented")
 type Backend struct {
 	Addr string
 	Port string
+}
+
+func NewBackend(str string) (*Backend, error) {
+	fields := strings.Split(str, ":")
+	if len(fields) != 2 {
+		err := fmt.Errorf("wrong format of backend: %s", str)
+		return nil, err
+	}
+
+	host := fields[0]
+	port := fields[1]
+	return &Backend{host, port}, nil
 }
 
 // A TCP service will publish to outer network
@@ -28,6 +42,10 @@ func NewService() *Service {
 	tgt := make([]*Backend, 0, 4)
 	srv.Backends = tgt
 	return srv
+}
+
+func (s *Service) AddBackend(b *Backend) {
+	s.Backends = append(s.Backends, b)
 }
 
 func (s *Service) Marshal() []byte {
