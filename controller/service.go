@@ -7,7 +7,10 @@ import (
 	"github.com/zhgwenming/vrouter/registry"
 	"github.com/zhgwenming/vrouter/service"
 	"log"
+	"os"
 	"strings"
+	"text/tabwriter"
+	"time"
 )
 
 type ServiceConfig struct {
@@ -74,6 +77,7 @@ func (mgr *ServiceManager) Add() error {
 	srv.Addr = listen[0]
 	srv.Port = listen[1]
 	srv.Active = true
+	srv.CreateTime = time.Now()
 
 	for _, backend := range strings.Fields(mgr.srvConfig.BackEnds) {
 		if b, err := service.NewBackend(backend); err == nil {
@@ -122,11 +126,27 @@ func (mgr *ServiceManager) List() error {
 	for i, n := range nodes {
 		value := n.Value
 
-		fmt.Printf("value is %#v", value)
+		//fmt.Printf("value is %#v", value)
 		services[i].UnMarshal(value)
 	}
 
-	fmt.Printf("%#v\n", services)
+	w := new(tabwriter.Writer)
+
+	// Format in tab-separated columns with a tab stop of 8.
+	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
+	fmt.Fprintln(w, "ADDRESS PORT\tCREATED TIME\tACTIVE\tSERVICE NAME\tBACKENDS")
+
+	for _, s := range services {
+		var status string
+		if s.Active {
+			status = "yes"
+		} else {
+			status = "no "
+		}
+		fmt.Fprintf(w, "%s:%s\t%s\t%s\t%s\n", s.Addr, s.Port, s.CreateTime.Local().Format("2006-01-01 15:04:05"), status, s.Name)
+	}
+	fmt.Fprintln(w)
+	w.Flush()
 
 	return nil
 }

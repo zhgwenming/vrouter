@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 var ErrNotImplemented = errors.New("Function not implemented")
@@ -31,12 +32,13 @@ func NewBackend(str string) (*Backend, error) {
 
 // A TCP service will publish to outer network
 type Service struct {
-	Name     string
-	Active   bool
-	Host     string // to be scheduled on
-	Addr     string // VIP or local address
-	Port     string
-	Backends []*Backend
+	Name       string
+	Active     bool
+	CreateTime time.Time
+	Host       string // to be scheduled on
+	Addr       string // VIP or local address
+	Port       string
+	Backends   []*Backend
 }
 
 func NewService() *Service {
