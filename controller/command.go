@@ -15,18 +15,18 @@ func NewConfig(cfg *registry.ClientConfig) *Config {
 }
 
 func (c *Config) CellInit(parent *cobra.Command) {
-	cell := new(NodeManager)
-	cell.config = c
+	manager := new(NodeManager)
+	manager.config = c
 	// new subcommand
 	cmd := &cobra.Command{
-		Use:   "cell-init <machine1,machine2,..>",
-		Short: "cell-init the machine registry",
-		Long:  "init the machine registry with specific ip network information",
-		Run:   cell.registryInit,
+		Use:   "node [init|...] <machine1,machine2,..>",
+		Short: "node subnet info",
+		Long:  "manage the node ip network related information",
+		Run:   manager.registryInit,
 	}
 
-	cmd.Flags().StringVarP(&cell.cellSubnet, "cellnet", "c", registry.DEFAULT_SUBNET, "cell cidr subnet ip address")
-	cmd.Flags().StringVarP(&cell.overlaySubnet, "overlay", "o", registry.DEFAULT_SUBNET, "the whole overlay subnet ip address")
+	cmd.Flags().StringVarP(&manager.cellSubnet, "cellnet", "c", registry.DEFAULT_SUBNET, "cell cidr subnet ip address")
+	cmd.Flags().StringVarP(&manager.overlaySubnet, "overlay", "o", registry.DEFAULT_SUBNET, "the whole overlay subnet ip address")
 
 	parent.AddCommand(cmd)
 }

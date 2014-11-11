@@ -24,18 +24,25 @@ func (n *NodeManager) registryInit(cmd *cobra.Command, args []string) {
 
 	n.etcdClient = registry.NewClient(n.config.etcdConfig)
 
-	if len(args) > 0 {
-		n.machines = args[0]
-		// just make slice if machines is not empty
-		if len(n.machines) > 0 {
-			n.hostNames = strings.Split(n.machines, ",")
-		} else {
+	if len(args) >= 2 {
+		action := args[0]
+		switch action {
+		case "init":
+			n.machines = args[1]
+			// just make slice if machines is not empty
+			if len(n.machines) > 0 {
+				n.hostNames = strings.Split(n.machines, ",")
+			} else {
+				cmd.Help()
+				log.Fatal("Empty machine list specified")
+			}
+		default:
 			cmd.Help()
-			log.Fatal("Empty machine list specified")
+			log.Fatalf("not defined action %s", action)
 		}
 	} else {
 		cmd.Help()
-		log.Fatal("No machine list specified")
+		log.Fatal("wrong args specified")
 	}
 
 	_, ipnet, err := net.ParseCIDR(n.cellSubnet)
