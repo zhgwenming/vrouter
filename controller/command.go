@@ -14,7 +14,7 @@ func NewConfig(cfg *registry.ClientConfig) *Config {
 	return c
 }
 
-func (c *Config) CellInit(parent *cobra.Command) {
+func (c *Config) Node(parent *cobra.Command) {
 	manager := new(NodeManager)
 	manager.config = c
 	// new subcommand
