@@ -5,6 +5,6 @@ import (
 )
 
 type ServiceScheduler struct {
-	services    []*service.Service
+	services    map[string]*service.Service
 	reScheduled []*service.Service
 }
