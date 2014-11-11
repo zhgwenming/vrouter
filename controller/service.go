@@ -37,6 +37,8 @@ func (mgr *ServiceManager) Run(cmd *cobra.Command, args []string) {
 			err = mgr.Add()
 		case "delete":
 			err = mgr.Delete()
+		case "ls":
+			fallthrough
 		case "list":
 			err = mgr.List()
 		default:
@@ -46,9 +48,9 @@ func (mgr *ServiceManager) Run(cmd *cobra.Command, args []string) {
 		if err != nil {
 			log.Fatalf("Error to add service: %s\n", err)
 		}
-		fmt.Printf("%#v\n", action)
 	} else {
-		// list all exist service?
+		fmt.Printf("No action specified.\n")
+		cmd.Usage()
 	}
 
 }
@@ -105,7 +107,26 @@ func (mgr *ServiceManager) Delete() error {
 }
 
 func (mgr *ServiceManager) List() error {
-	fmt.Printf("List services\n")
+	fmt.Printf("List services:\n")
+
+	key := registry.RouterServicesPrefix()
+	resp, err := mgr.etcdClient.Get(key, true, true)
+	if err != nil {
+		return err
+	}
+
+	nodes := resp.Node.Nodes
+
+	length := len(nodes)
+	services := make([]service.Service, length)
+	for i, n := range nodes {
+		value := n.Value
+
+		fmt.Printf("value is %#v", value)
+		services[i].UnMarshal(value)
+	}
+
+	fmt.Printf("%#v\n", services)
 
 	return nil
 }

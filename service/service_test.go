@@ -19,7 +19,7 @@ func TestEncodeDecode(t *testing.T) {
 	buf := orig.Marshal()
 
 	dec := NewService()
-	dec.UnMarshal(buf)
+	dec.UnMarshal(string(buf))
 
 	if !reflect.DeepEqual(orig, dec) {
 		t.Fatalf("error with unmarshaled value, orig: %#v, new: %#v", orig, dec)

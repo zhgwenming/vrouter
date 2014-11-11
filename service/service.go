@@ -56,9 +56,9 @@ func (s *Service) Marshal() []byte {
 	return buf.Bytes()
 }
 
-func (s *Service) UnMarshal(buf []byte) error {
-	buffer := bytes.NewBuffer(buf)
-	decoder := gob.NewDecoder(buffer)
+func (s *Service) UnMarshal(str string) error {
+	reader := strings.NewReader(str)
+	decoder := gob.NewDecoder(reader)
 	return decoder.Decode(s)
 }
 
