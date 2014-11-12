@@ -111,7 +111,7 @@ func (mgr *ServiceManager) Delete() error {
 }
 
 func (mgr *ServiceManager) List() error {
-	fmt.Printf("list services:\n")
+	//fmt.Printf("list services:\n")
 
 	key := registry.RouterServicesPrefix()
 	resp, err := mgr.etcdClient.Get(key, true, true)
@@ -148,7 +148,7 @@ func (mgr *ServiceManager) List() error {
 			s.CreateTime.Local().Format("2006-01-01 15:04:05"),
 			status, s.Backends)
 	}
-	fmt.Fprintln(w)
+	//fmt.Fprintln(w)
 	w.Flush()
 
 	return nil
