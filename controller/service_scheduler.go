@@ -8,11 +8,11 @@ import (
 
 type ServiceScheduler struct {
 	sync.Mutex
-	run             chan struct{}
-	lastRunTime     time.Time
-	stableServices  map[string]*service.Service
-	pendingServices []*service.Service
-	orphanServices  []*service.Service
+	run      chan struct{}
+	lastRun  time.Time
+	stables  map[string]*service.Service
+	pendings []*service.Service
+	orphans  []*service.Service
 }
 
 func NewServiceScheduler() *ServiceScheduler {
@@ -21,7 +21,7 @@ func NewServiceScheduler() *ServiceScheduler {
 	stable := make(map[string]*service.Service, 512)
 
 	sch.run = run
-	sch.stableServices = stable
+	sch.stables = stable
 
 	return sch
 }
@@ -46,18 +46,18 @@ func (sch *ServiceScheduler) AddService(srv *service.Service) {
 	sch.Lock()
 	defer sch.Unlock()
 
-	sch.orphanServices = append(sch.orphanServices, srv)
+	sch.orphans = append(sch.orphans, srv)
 	sch.notify()
 }
 
 func (sch *ServiceScheduler) FailNode(node string) {
-	for key, srv := range sch.stableServices {
+	for key, srv := range sch.stables {
 		if srv.Host == node {
 			sch.Lock()
 			defer sch.Unlock()
 
-			delete(sch.stableServices, key)
-			sch.orphanServices = append(sch.orphanServices, srv)
+			delete(sch.stables, key)
+			sch.orphans = append(sch.orphans, srv)
 			return
 		}
 	}
