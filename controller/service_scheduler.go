@@ -50,15 +50,19 @@ func (sch *ServiceScheduler) AddService(srv *service.Service) {
 	sch.notify()
 }
 
-func (sch *ServiceScheduler) FailNode(node string) {
+func (sch *ServiceScheduler) FailNode(node string) error {
+	sch.Lock()
+	defer sch.Unlock()
+
+	var err = fmt.Errorf("Node not found %s", node)
 	for key, srv := range sch.stables {
 		if srv.Host == node {
-			sch.Lock()
-			defer sch.Unlock()
-
 			delete(sch.stables, key)
 			sch.orphans = append(sch.orphans, srv)
-			return
+			err = nil
+			break
 		}
 	}
+
+	return err
 }
