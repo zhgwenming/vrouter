@@ -2,10 +2,12 @@ package controller
 
 import (
 	"github.com/zhgwenming/vrouter/service"
+	"sync"
 	"time"
 )
 
 type ServiceScheduler struct {
+	sync.Mutex
 	run             chan struct{}
 	lastRunTime     time.Time
 	stableServices  map[string]*service.Service
@@ -25,17 +27,38 @@ func NewServiceScheduler() *ServiceScheduler {
 }
 
 // Notify poke the scheduler as a event happened
-func (srv *ServiceScheduler) Notify() {
-	srv.run <- struct{}{}
+func (sch *ServiceScheduler) notify() {
+	sch.run <- struct{}{}
 }
 
 // wait drain all the channel msg in case multiple events happened
-func (srv *ServiceScheduler) wait() {
-	<-srv.run
+func (sch *ServiceScheduler) wait() {
+	<-sch.run
 	for {
-		_, ok := <-srv.run
+		_, ok := <-sch.run
 		if !ok {
 			break
+		}
+	}
+}
+
+func (sch *ServiceScheduler) AddService(srv *service.Service) {
+	sch.Lock()
+	defer sch.Unlock()
+
+	sch.orphanServices = append(sch.orphanServices, srv)
+	sch.notify()
+}
+
+func (sch *ServiceScheduler) FailNode(node string) {
+	for key, srv := range sch.stableServices {
+		if srv.Host == node {
+			sch.Lock()
+			defer sch.Unlock()
+
+			delete(sch.stableServices, key)
+			sch.orphanServices = append(sch.orphanServices, srv)
+			return
 		}
 	}
 }
