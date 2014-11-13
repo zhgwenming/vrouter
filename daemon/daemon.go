@@ -153,6 +153,12 @@ func (d *Daemon) KeepAlive() error {
 		}
 		if err = d.doKeepAlive(key, value, ttl); err == nil {
 			break
+		} else {
+			if v, ok := err.(*etcd.EtcdError); ok {
+				if v.ErrorCode == etcd.ErrCodeEtcdNotReachable {
+					break
+				}
+			}
 		}
 	}
 
