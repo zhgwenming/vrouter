@@ -120,7 +120,7 @@ func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
 		go func() {
 			sleeptime := time.Duration(ttl / 3)
 			for {
-				index := resp.EtcdIndex
+				index := resp.Node.ModifiedIndex
 				time.Sleep(sleeptime * time.Second)
 				resp, err = client.CompareAndSwap(key, value, ttl, value, index)
 				if err != nil {
