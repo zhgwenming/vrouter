@@ -80,7 +80,7 @@ func (cfg *Config) Run(c *cobra.Command, args []string) {
 		// start keepalive first
 		err := vrouter.KeepAlive()
 		if err != nil {
-			log.Fatalf("error to keepalive: %s, other instance running?", err)
+			log.Fatalf("error to keepalive: %s", err)
 		}
 
 		// bind and get a bridge IPNet with our iface ip
