@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+type Notification struct {
+	service uint64
+	host    uint64
+}
+
 type ServiceScheduler struct {
 	sync.Mutex
 	run     chan struct{}
