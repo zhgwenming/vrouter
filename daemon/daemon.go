@@ -231,7 +231,7 @@ func (d *Daemon) updateNodeRoute() error {
 	key := registry.NodeRoutePath(d.config.Hostname)
 	value := r.String()
 
-	if _, err := client.Set(key, value, uint64(0)); err != nil {
+	if err := registry.Set(client, key, value); err != nil {
 		//log.Printf("Error to create node: %s", err)
 		return err
 	}
