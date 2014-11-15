@@ -16,6 +16,7 @@ type Config struct {
 	// command switches
 	daemonMode  bool
 	gatewayMode bool
+	foreground  bool
 
 	pidFile string
 	// host relate information
@@ -57,7 +58,8 @@ func (cfg *Config) InitCmd(client *registry.ClientConfig) *cobra.Command {
 	cfg.Hostname, _ = os.Hostname()
 
 	flags.BoolVarP(&cfg.daemonMode, "daemon", "d", false, "whether to run as daemon mode")
-	flags.StringVarP(&cfg.pidFile, "pidfile", "p", "/var/run/vrouter.pid", "pidfile to write to")
+	flags.BoolVarP(&cfg.foreground, "foreground", "f", false, "whether to run as a foreground process")
+	flags.StringVarP(&cfg.pidFile, "pidfile", "p", "", "pidfile to write to")
 
 	flags.BoolVarP(&cfg.gatewayMode, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
 
@@ -77,8 +79,8 @@ func (cfg *Config) Run(c *cobra.Command, args []string) {
 		// -peer-addr 127.0.0.1:7001 -addr 127.0.0.1:4001 -data-dir machines/machine1 -name machine1
 		//go registry.StartEtcd("-peer-addr", "127.0.0.1:7001", "-addr", "127.0.0.1:4001", "-data-dir", "machines/"+daemon.Hostname, "-name", daemon.Hostname)
 
-		// start as a daemon
-		daemonctl.Start(cfg.pidFile)
+		// start as a background process
+		daemonctl.Start(cfg.pidFile, cfg.foreground)
 
 		client := registry.NewClient(cfg.etcdConfig)
 		vrouter := NewDaemon(cfg, client)
