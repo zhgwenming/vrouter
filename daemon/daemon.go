@@ -114,11 +114,12 @@ func (d *Daemon) ManageRoute() error {
 func (d *Daemon) doKeepAlive(mpath, hpath, value string, ttl uint64) error {
 	client := d.etcdClient
 
-	if _, err := client.Create(mpath, "", uint64(0)); err != nil {
+	// create the heartbeat node first
+	if _, err := client.Create(hpath+"/"+"watch", value, ttl); err != nil {
 		return err
 	} else {
-		//log.Printf("No instance exist on this node, starting")
-		if _, err := client.Create(hpath+"/"+"watch", value, ttl); err != nil {
+		// create the member node, then the node watchers could be started
+		if _, err := client.Set(mpath, "", uint64(0)); err != nil {
 			return err
 		} else {
 
