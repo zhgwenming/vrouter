@@ -30,6 +30,10 @@ func NodeActivePath(node string) string {
 	return REGISTRY_PREFIX + "/" + "members" + "/" + node
 }
 
+func NodeHeartbeatsPath(node string) string {
+	return REGISTRY_PREFIX + "/" + "heartbeats" + "/" + node
+}
+
 func RouterOverlayPath() string {
 	return REGISTRY_PREFIX + "/" + "ipnet_overlay"
 }

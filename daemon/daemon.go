@@ -110,25 +110,31 @@ func (d *Daemon) ManageRoute() error {
 	return nil
 }
 
-func (d *Daemon) doKeepAlive(key, value string, ttl uint64) error {
+// mpath, hpath - for memberPath and hearbeatPath
+func (d *Daemon) doKeepAlive(mpath, hpath, value string, ttl uint64) error {
 	client := d.etcdClient
 
-	if resp, err := client.Create(key, value, ttl); err != nil {
+	if _, err := client.Create(mpath, "", uint64(0)); err != nil {
 		return err
 	} else {
 		//log.Printf("No instance exist on this node, starting")
-		go func() {
-			sleeptime := time.Duration(ttl / 3)
-			for {
-				index := resp.Node.ModifiedIndex
-				time.Sleep(sleeptime * time.Second)
-				resp, err = client.CompareAndSwap(key, value, ttl, value, index)
-				if err != nil {
-					log.Fatal("Unexpected lost our node lock", err)
+		if _, err := client.Create(hpath+"/"+"watch", value, ttl); err != nil {
+			return err
+		} else {
+
+			// update the dir ttl in background
+			go func() {
+				sleeptime := time.Duration(ttl / 3)
+				for {
+					time.Sleep(sleeptime * time.Second)
+					_, err = client.UpdateDir(hpath, ttl)
+					if err != nil {
+						log.Fatal("Unexpected lost our node lock", err)
+					}
 				}
-			}
-		}()
-		return nil
+			}()
+			return nil
+		}
 	}
 }
 
@@ -141,8 +147,9 @@ func (d *Daemon) KeepAlive() error {
 		}
 	}
 
-	key := registry.NodeActivePath(d.config.Hostname)
-	value := "alive"
+	memberPath := registry.NodeActivePath(d.config.Hostname)
+	heartbeatPath := registry.NodeHeartbeatsPath(d.config.Hostname)
+	value := d.config.Hostname
 	ttl := uint64(5)
 
 	// just retry once
@@ -151,7 +158,7 @@ func (d *Daemon) KeepAlive() error {
 			log.Printf("Waiting keepalive lock..")
 			time.Sleep(5 * time.Second)
 		}
-		if err = d.doKeepAlive(key, value, ttl); err == nil {
+		if err = d.doKeepAlive(memberPath, heartbeatPath, value, ttl); err == nil {
 			break
 		} else {
 			if v, ok := err.(*etcd.EtcdError); ok {
