@@ -4,6 +4,7 @@ import (
 	"github.com/zhgwenming/vrouter/controller"
 	"github.com/zhgwenming/vrouter/daemon"
 	"github.com/zhgwenming/vrouter/registry"
+	//_ "github.com/zhgwenming/gbalancer/daemon"
 	"log"
 	"os"
 	"syscall"

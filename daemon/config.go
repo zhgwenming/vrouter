@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	daemonctl "github.com/zhgwenming/gbalancer/daemon"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/zhgwenming/vrouter/netinfo"
 	"github.com/zhgwenming/vrouter/registry"
@@ -16,6 +17,7 @@ type Config struct {
 	daemonMode  bool
 	gatewayMode bool
 
+	pidFile string
 	// host relate information
 	Hostip   string
 	Hostname string
@@ -55,6 +57,8 @@ func (cfg *Config) InitCmd(client *registry.ClientConfig) *cobra.Command {
 	cfg.Hostname, _ = os.Hostname()
 
 	flags.BoolVarP(&cfg.daemonMode, "daemon", "d", false, "whether to run as daemon mode")
+	flags.StringVarP(&cfg.pidFile, "pidfile", "p", "/var/run/vrouter.pid", "pidfile to write to")
+
 	flags.BoolVarP(&cfg.gatewayMode, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
 
 	// need to convert to IPNet form
@@ -72,6 +76,9 @@ func (cfg *Config) Run(c *cobra.Command, args []string) {
 		//daemon := cmd.Daemon
 		// -peer-addr 127.0.0.1:7001 -addr 127.0.0.1:4001 -data-dir machines/machine1 -name machine1
 		//go registry.StartEtcd("-peer-addr", "127.0.0.1:7001", "-addr", "127.0.0.1:4001", "-data-dir", "machines/"+daemon.Hostname, "-name", daemon.Hostname)
+
+		// start as a daemon
+		daemonctl.Start(cfg.pidFile)
 
 		client := registry.NewClient(cfg.etcdConfig)
 		vrouter := NewDaemon(cfg, client)
@@ -101,11 +108,16 @@ func (cfg *Config) Run(c *cobra.Command, args []string) {
 			}
 		}
 
-		// monitor the routing table change
-		err = vrouter.ManageRoute()
-		if err != nil {
-			log.Fatal(err)
-		}
+		go func() {
+
+			// monitor the routing table change
+			err = vrouter.ManageRoute()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+
+		daemonctl.WaitSignal(nil)
 
 	} else {
 		c.Help()
