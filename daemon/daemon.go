@@ -117,7 +117,7 @@ func (d *Daemon) doKeepAlive(mpath, hpath, value string, ttl uint64) error {
 	watchNode := hpath + "/" + "watch"
 
 	// create the heartbeat node first
-	if _, err := client.Create(watchNode, value, ttl); err != nil {
+	if _, err := client.Create(watchNode, value, uint64(0)); err != nil {
 		return err
 	} else {
 		// create the member node, then the node watchers could be started
