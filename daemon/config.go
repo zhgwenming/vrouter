@@ -80,7 +80,9 @@ func (cfg *Config) Run(c *cobra.Command, args []string) {
 		//go registry.StartEtcd("-peer-addr", "127.0.0.1:7001", "-addr", "127.0.0.1:4001", "-data-dir", "machines/"+daemon.Hostname, "-name", daemon.Hostname)
 
 		// start as a background process
-		daemonctl.Start(cfg.pidFile, cfg.foreground)
+		if err := daemonctl.Start(cfg.pidFile, cfg.foreground); err != nil {
+			log.Fatal(err)
+		}
 
 		client := registry.NewClient(cfg.etcdConfig)
 		vrouter := NewDaemon(cfg, client)
