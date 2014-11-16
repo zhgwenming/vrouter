@@ -79,6 +79,7 @@ func (cfg *Config) Run(c *cobra.Command, args []string) {
 		// -peer-addr 127.0.0.1:7001 -addr 127.0.0.1:4001 -data-dir machines/machine1 -name machine1
 		//go registry.StartEtcd("-peer-addr", "127.0.0.1:7001", "-addr", "127.0.0.1:4001", "-data-dir", "machines/"+daemon.Hostname, "-name", daemon.Hostname)
 
+		daemonctl.SetRestart()
 		// start as a background process
 		if err := daemonctl.Start(cfg.pidFile, cfg.foreground); err != nil {
 			log.Fatal(err)
