@@ -117,11 +117,10 @@ func (d *Daemon) doKeepAlive(mpath, hpath, value string, ttl uint64) error {
 	watchNode := hpath + "/" + "watch"
 
 	// create the heartbeat node first
-	if _, err := client.Create(watchNode, value, uint64(0)); err != nil {
+	if _, err := client.CreateDir(hpath, ttl); err != nil {
 		return err
 	} else {
-		// create the member node, then the node watchers could be started
-		if _, err := client.Set(mpath, watchNode, uint64(0)); err != nil {
+		if _, err := client.Create(watchNode, value, uint64(0)); err != nil {
 			return err
 		} else {
 
@@ -138,7 +137,13 @@ func (d *Daemon) doKeepAlive(mpath, hpath, value string, ttl uint64) error {
 			}()
 			return nil
 		}
+
+		// create the member node, then the node watchers could be started
+		if _, err := client.Set(mpath, watchNode, uint64(0)); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (d *Daemon) KeepAlive() error {
