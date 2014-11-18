@@ -47,9 +47,14 @@ func (cfg *Config) InitCmd(client *registry.ClientConfig) *cobra.Command {
 	}
 
 	var ipnet *net.IPNet
+	var hostIp string
+
 	ipnetlist := netinfo.ListIPNet(true)
 	if len(ipnetlist) > 0 {
 		ipnet = ipnetlist[0]
+		hostIp = ipnet.String()
+	} else {
+		hostIp = ""
 	}
 
 	// vrouter flags
@@ -64,7 +69,7 @@ func (cfg *Config) InitCmd(client *registry.ClientConfig) *cobra.Command {
 	flags.BoolVarP(&cfg.gatewayMode, "gateway", "g", false, "to run as dedicated gateway, will not allocate subnet on this machine")
 
 	// need to convert to IPNet form
-	flags.StringVarP(&cfg.Hostip, "hostip", "i", ipnet.String(), "use specified ip/mask instead auto detected ip address")
+	flags.StringVarP(&cfg.Hostip, "hostip", "i", hostIp, "use specified ip/mask instead auto detected ip address")
 
 	// vrouter information
 	flags.StringVarP(&cfg.Hostname, "hostname", "n", cfg.Hostname, "hostname to use in daemon mode")
