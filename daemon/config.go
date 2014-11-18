@@ -78,55 +78,58 @@ func (cfg *Config) InitCmd(client *registry.ClientConfig) *cobra.Command {
 	return routerCmd
 }
 
+// Serve is the actual entry point of the handler
+func (cfg *Config) Serve() {
+	client := registry.NewClient(cfg.etcdConfig)
+	vrouter := NewDaemon(cfg, client)
+	cfg.Daemon = vrouter
+
+	// start keepalive first
+	err := vrouter.KeepAlive()
+	if err != nil {
+		log.Fatalf("error to keepalive: %s", err)
+	}
+
+	// bind and get a bridge IPNet with our iface ip
+	// create the routing table entry in registry
+	bridgeIPNet, err := vrouter.BindBridgeIPNet(cfg.Hostip)
+	if err != nil {
+		log.Fatal("Failed to bind router interface: ", err)
+	} else {
+		log.Printf("Requested bridge ip - %v\n", bridgeIPNet)
+	}
+
+	// create bridge if we're running under linux
+	// to debug on Mac OS X
+	if runtime.GOOS == "linux" {
+		err = vrouter.CreateBridge(bridgeIPNet.String())
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	go func() {
+
+		// monitor the routing table change
+		err = vrouter.ManageRoute()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+}
+
 func (cfg *Config) Run(c *cobra.Command, args []string) {
 	if cfg.daemonMode {
 		//daemon := cmd.Daemon
 		// -peer-addr 127.0.0.1:7001 -addr 127.0.0.1:4001 -data-dir machines/machine1 -name machine1
 		//go registry.StartEtcd("-peer-addr", "127.0.0.1:7001", "-addr", "127.0.0.1:4001", "-data-dir", "machines/"+daemon.Hostname, "-name", daemon.Hostname)
 
-		// start as a background process
-		if err := daemonctl.StartSupervisor(cfg.pidFile, cfg.foreground); err != nil {
+		daemonctl.HandleFunc(cfg.Serve)
+
+		// start the engine
+		if err := daemonctl.Start(cfg.pidFile, cfg.foreground); err != nil {
 			log.Fatal(err)
 		}
-
-		client := registry.NewClient(cfg.etcdConfig)
-		vrouter := NewDaemon(cfg, client)
-		cfg.Daemon = vrouter
-
-		// start keepalive first
-		err := vrouter.KeepAlive()
-		if err != nil {
-			log.Fatalf("error to keepalive: %s", err)
-		}
-
-		// bind and get a bridge IPNet with our iface ip
-		// create the routing table entry in registry
-		bridgeIPNet, err := vrouter.BindBridgeIPNet(cfg.Hostip)
-		if err != nil {
-			log.Fatal("Failed to bind router interface: ", err)
-		} else {
-			log.Printf("Requested bridge ip - %v\n", bridgeIPNet)
-		}
-
-		// create bridge if we're running under linux
-		// to debug on Mac OS X
-		if runtime.GOOS == "linux" {
-			err = vrouter.CreateBridge(bridgeIPNet.String())
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-
-		go func() {
-
-			// monitor the routing table change
-			err = vrouter.ManageRoute()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
-
-		daemonctl.SupervisorWait(nil)
 
 	} else {
 		c.Help()
