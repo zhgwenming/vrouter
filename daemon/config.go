@@ -1,7 +1,7 @@
 package daemon
 
 import (
-	daemonctl "github.com/zhgwenming/gbalancer/daemon"
+	"github.com/zhgwenming/nestor"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/zhgwenming/vrouter/netinfo"
 	"github.com/zhgwenming/vrouter/registry"
@@ -124,10 +124,10 @@ func (cfg *Config) Run(c *cobra.Command, args []string) {
 		// -peer-addr 127.0.0.1:7001 -addr 127.0.0.1:4001 -data-dir machines/machine1 -name machine1
 		//go registry.StartEtcd("-peer-addr", "127.0.0.1:7001", "-addr", "127.0.0.1:4001", "-data-dir", "machines/"+daemon.Hostname, "-name", daemon.Hostname)
 
-		daemonctl.HandleFunc(cfg.Serve)
+		eng := nestor.HandleFunc(cfg.pidFile, cfg.foreground, cfg.Serve)
 
 		// start the engine
-		if err := daemonctl.Start(cfg.pidFile, cfg.foreground); err != nil {
+		if err := nestor.Start(eng); err != nil {
 			log.Fatal(err)
 		}
 
