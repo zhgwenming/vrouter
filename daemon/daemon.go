@@ -7,7 +7,6 @@ import (
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
 	"github.com/zhgwenming/vrouter/netinfo"
 	"github.com/zhgwenming/vrouter/registry"
-	"log"
 	"net"
 	"os"
 	"strconv"

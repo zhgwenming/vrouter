@@ -2,7 +2,6 @@ package registry
 
 import (
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
-	"log"
 	"strings"
 )
 

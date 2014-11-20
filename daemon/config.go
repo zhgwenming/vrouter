@@ -3,12 +3,16 @@ package daemon
 import (
 	"github.com/zhgwenming/nestor"
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
+	"github.com/zhgwenming/vrouter/logger"
 	"github.com/zhgwenming/vrouter/netinfo"
 	"github.com/zhgwenming/vrouter/registry"
-	"log"
 	"net"
 	"os"
 	"runtime"
+)
+
+var (
+	log = logger.NewLogger()
 )
 
 // command for configuration which exists before and after *cobra.Config.Execute()

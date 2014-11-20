@@ -2,7 +2,12 @@ package registry
 
 import (
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	"github.com/zhgwenming/vrouter/logger"
 	"strings"
+)
+
+var (
+	log = logger.NewLogger()
 )
 
 type Registry struct {
