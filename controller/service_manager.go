@@ -6,7 +6,6 @@ import (
 	"github.com/zhgwenming/vrouter/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/zhgwenming/vrouter/registry"
 	"github.com/zhgwenming/vrouter/service"
-	"log"
 	"os"
 	"strings"
 	"text/tabwriter"
