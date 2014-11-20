@@ -6,11 +6,15 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
+	"github.com/zhgwenming/vrouter/logger"
 	"strings"
 	"time"
 )
 
-var ErrNotImplemented = errors.New("Function not implemented")
+var (
+	log               = logger.NewLogger()
+	ErrNotImplemented = errors.New("Function not implemented")
+)
 
 // Service Backend
 type Backend struct {
