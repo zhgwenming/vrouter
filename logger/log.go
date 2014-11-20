@@ -7,13 +7,14 @@ package logger
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
 func NewLogger() (l *log.Logger) {
-	prog := os.Args[0]
+	prog := filepath.Base(os.Args[0])
 	pid := strconv.Itoa(os.Getpid())
 
-	l = log.New(os.Stderr, prog+"["+pid+"]", log.LstdFlags)
+	l = log.New(os.Stderr, prog+"["+pid+"] ", log.LstdFlags)
 	return
 }
