@@ -70,7 +70,7 @@ func (mgr *ServiceManager) Add() error {
 	// listen addr/port
 	listen := strings.Split(mgr.srvConfig.Listen, ":")
 	if len(listen) != 2 {
-		return fmt.Errorf("error format of listen: %s, should be ip:port form")
+		return fmt.Errorf("error format of listen: %s, should be ip:port form", mgr.srvConfig.Listen)
 	}
 
 	srv.Addr = listen[0]
