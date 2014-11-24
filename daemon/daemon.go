@@ -121,21 +121,19 @@ func (d *Daemon) doKeepAlive(mpath, hpath, value string, ttl uint64) error {
 	} else {
 		if _, err := client.Create(watchNode, value, uint64(0)); err != nil {
 			return err
-		} else {
-
-			// update the dir ttl in background
-			go func() {
-				sleeptime := time.Duration(ttl / 3)
-				for {
-					time.Sleep(sleeptime * time.Second)
-					_, err = client.UpdateDir(hpath, ttl)
-					if err != nil {
-						log.Fatal("Unexpected lost our node lock", err)
-					}
-				}
-			}()
-			return nil
 		}
+
+		// update the dir ttl in background
+		go func() {
+			sleeptime := time.Duration(ttl / 3)
+			for {
+				time.Sleep(sleeptime * time.Second)
+				_, err = client.UpdateDir(hpath, ttl)
+				if err != nil {
+					log.Fatal("Unexpected lost our node lock", err)
+				}
+			}
+		}()
 
 		// create the member node, then the node watchers could be started
 		if _, err := client.Set(mpath, watchNode, uint64(0)); err != nil {
