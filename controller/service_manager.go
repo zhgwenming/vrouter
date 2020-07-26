@@ -173,6 +173,6 @@ func (mgr *ServiceManager) Schedule() {
 	}
 }
 
-// ServeNode would run the actuall service on all the slave nodes
+// ServeNode would run the actuall service on all the subordinate nodes
 func (mgr *ServiceManager) ServeNode(node string) {
 }

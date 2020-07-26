@@ -55,7 +55,7 @@ func NetworkSetNsPid(iface *net.Interface, nspid int) error {
 	return ErrNotImplemented
 }
 
-func NetworkSetMaster(iface, master *net.Interface) error {
+func NetworkSetMain(iface, main *net.Interface) error {
 	return ErrNotImplemented
 }
 
@@ -71,6 +71,6 @@ func DeleteBridge(name string) error {
 	return ErrNotImplemented
 }
 
-func AddToBridge(iface, master *net.Interface) error {
+func AddToBridge(iface, main *net.Interface) error {
 	return ErrNotImplemented
 }

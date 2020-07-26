@@ -548,8 +548,8 @@ func NetworkSetMTU(iface *net.Interface, mtu int) error {
 	return s.HandleAck(wb.Seq)
 }
 
-// same as ip link set $name master $master
-func NetworkSetMaster(iface, master *net.Interface) error {
+// same as ip link set $name main $main
+func NetworkSetMain(iface, main *net.Interface) error {
 	s, err := getNetlinkSocket()
 	if err != nil {
 		return err
@@ -569,7 +569,7 @@ func NetworkSetMaster(iface, master *net.Interface) error {
 		b      = make([]byte, 4)
 		native = nativeEndian()
 	)
-	native.PutUint32(b, uint32(master.Index))
+	native.PutUint32(b, uint32(main.Index))
 
 	data := newRtAttr(syscall.IFLA_MASTER, b)
 	wb.AddData(data)
@@ -950,11 +950,11 @@ func DeleteBridge(name string) error {
 	return nil
 }
 
-// Add a slave to abridge device.  This is more backward-compatible than
-// netlink.NetworkSetMaster and works on RHEL 6.
-func AddToBridge(iface, master *net.Interface) error {
-	if len(master.Name) >= IFNAMSIZ {
-		return fmt.Errorf("Interface name %s too long", master.Name)
+// Add a subordinate to abridge device.  This is more backward-compatible than
+// netlink.NetworkSetMain and works on RHEL 6.
+func AddToBridge(iface, main *net.Interface) error {
+	if len(main.Name) >= IFNAMSIZ {
+		return fmt.Errorf("Interface name %s too long", main.Name)
 	}
 
 	s, err := getIfSocket()
@@ -964,7 +964,7 @@ func AddToBridge(iface, master *net.Interface) error {
 	defer syscall.Close(s)
 
 	ifr := ifreqIndex{}
-	copy(ifr.IfrnName[:len(ifr.IfrnName)-1], master.Name)
+	copy(ifr.IfrnName[:len(ifr.IfrnName)-1], main.Name)
 	ifr.IfruIndex = int32(iface.Index)
 
 	if _, _, err := syscall.Syscall(syscall.SYS_IOCTL, uintptr(s), SIOC_BRADDIF, uintptr(unsafe.Pointer(&ifr))); err != 0 {
